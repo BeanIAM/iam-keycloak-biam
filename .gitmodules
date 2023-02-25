@@ -1,0 +1,9 @@
+[submodule "master/keycloak"]
+	path = master/keycloak
+	url = git@github.com:keycloak/keycloak.git
+[submodule "releases/v20/latest/keycloak"]
+	path = releases/v20/latest/keycloak
+	url = git@github.com:keycloak/keycloak.git
+[submodule "releases/v20/0/latest/keycloak"]
+	path = releases/v20/0/latest/keycloak
+	url = git@github.com:keycloak/keycloak.git
