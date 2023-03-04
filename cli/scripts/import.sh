@@ -15,6 +15,8 @@ Usage:
 EOF
 }
 
+git submodule foreach --recursive 'git fetch --tags --force'
+
 MAJOR_VERSION=$1
 
 # if [ -z "$MAJOR_VERSION" ]; then usage "ERROR | No major version provided"; exit 1; fi
@@ -46,8 +48,10 @@ touch "cicd/.gitkeep"
 
 # create submodule
 if [ -d "keycloak" ]; then
-  git submodule init keycloak
-  git submodule update keycloak
+  cd "keycloak"
+  git submodule init .
+  git submodule update .
+  cd ..
 fi
 git submodule add -f git@github.com:keycloak/keycloak.git keycloak
 cd "keycloak"
