@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - 'test-workflow/**'
-      - feat/CICD-3/**
   schedule:
     # * is a special character in YAML so you have to quote this string
     - cron:  '0 1 * * *'
@@ -17,7 +16,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      # Can we own this?
+      - name: webfactory/ssh-agent
+        uses: webfactory/ssh-agent@v0.7.0
         with:
-          submodules: recursive
-      - run: ./cli/scripts/import.sh
-      - run: echo ${{ github.sha }}
+          ssh-private-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
+
+      - name: Set author identity
+        run: |
+          git config --global user.email "bot@peterbean.net"
+          git config --global user.name "BeanBot"
+      - name: Run import.sh
+        run: ./cli/scripts/import.sh
+      
