@@ -1,0 +1,23 @@
+name: Import latest releases from upstream
+run-name: ${{ github.actor }} is importing latest releases from upstream
+on:
+  push:
+    branches:
+      - 'test-workflow/**'
+      - feat/CICD-3/**
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '0 1 * * *'
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  import-and-create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - run: ./cli/scripts/import.sh
+      - run: echo ${{ github.sha }}
