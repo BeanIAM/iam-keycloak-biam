@@ -17,7 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      # Can we own this?
+      - name: webfactory/ssh-agent
+        uses: webfactory/ssh-agent@v0.7.0
         with:
-          submodules: recursive
+          ssh-private-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
+
       - run: ./cli/scripts/import.sh
       - run: echo ${{ github.sha }}
