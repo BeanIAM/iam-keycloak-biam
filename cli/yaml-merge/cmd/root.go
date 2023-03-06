@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"gopkg.in/yaml.v3"
-	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -18,43 +18,41 @@ var rootCmd = &cobra.Command{
 	Use:   "yaml-merge",
 	Short: "merge a yaml file with another",
 	Long:  `When we run patch v20, it must merge ci.yml in the patches folder with ci.yml in the upstream keycloak folder and save the output result in the file with path releases/v20/latest/dev/.github/workflows/ci.yml.`,
-	Args:  cobra.MaximumNArgs(0),
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
+	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		mergedVersion, flagErr := cmd.Flags().GetString("version")
-		if flagErr != nil {
-			return flagErr
-		}
+		const (
+			releasesDir    = "./releases"
+			latestDir      = "latest"
+			patchesDir     = "patches"
+			keycloakDir    = "keycloak"
+			devDir         = "dev"
+			workflowsDir   = ".github/workflows"
+			ciYamlFilename = "ci.yml"
+		)
 
-		cwd, _ := os.Getwd()
-		versionPath := fmt.Sprintf("%s/releases/%s/latest/patches", cwd, mergedVersion)
-		targetPath := "./.github/workflows/ci.yml"
-		sourcePath := fmt.Sprintf("%s/%s", versionPath, targetPath)
+		versionPath := fmt.Sprintf("%s/%s/%s/%s/%s/%s", releasesDir, args[0], latestDir, patchesDir, workflowsDir, ciYamlFilename)
+		keycloakPath := fmt.Sprintf("%s/%s/%s/%s/%s/%s", releasesDir, args[0], latestDir, keycloakDir, workflowsDir, ciYamlFilename)
+		targetPath := fmt.Sprintf("%s/%s/%s/%s/%s/%s", releasesDir, args[0], latestDir, devDir, workflowsDir, ciYamlFilename)
 
 		if _, err := os.Stat(versionPath); os.IsNotExist(err) {
-			return errors.New(fmt.Sprintf("version not found (%s)", versionPath))
+			return errors.New(fmt.Sprintf("Version not found (%s)", versionPath))
 		}
 
-		sourceFile, err := readCIFile(sourcePath)
-		if os.IsNotExist(err) {
-			return errors.New(fmt.Sprintf("File not found (%s)", sourcePath))
-		} else if err != nil {
+		targetFile := CIFile{}
+		for _, path := range []string{keycloakPath, versionPath} {
+			file, err := readCIFile(path)
+			if os.IsNotExist(err) {
+				return fmt.Errorf("file not found (%s)", path)
+			} else if err != nil {
+				return err
+			}
+			targetFile.merge(file)
+		}
+		err := targetFile.writeCIFile(targetPath)
+		if err != nil {
 			return err
 		}
-
-		if targetFile, err := readCIFile(targetPath); os.IsNotExist(err) {
-			err := copyFile(sourcePath, targetPath)
-			if err != nil {
-				return err
-			}
-		} else {
-			targetFile.merge(sourceFile)
-			err := targetFile.writeCIFile(targetPath)
-			if err != nil {
-				return err
-			}
-		}
+		cmd.Println("Merge successfully")
 		return nil
 	},
 }
@@ -77,27 +75,6 @@ func (f *CIFile) merge(srcFile CIFile) {
 			}
 		}
 	}
-}
-
-func copyFile(src, dst string) error {
-	srcFile, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer srcFile.Close()
-
-	dstFile, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer dstFile.Close()
-
-	_, err = io.Copy(dstFile, srcFile)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 type CIFile struct {
@@ -124,6 +101,12 @@ func (f *CIFile) writeCIFile(path string) error {
 	if err != nil {
 		return err
 	}
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+			return err
+		}
+	}
 	err = os.WriteFile(path, data, 0644)
 	if err != nil {
 		return err
@@ -149,5 +132,5 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().StringP("version", "v", "", "Specify merged version")
+	//rootCmd.Flags().StringP("version", "v", "", "Specify merged version")
 }
