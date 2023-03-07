@@ -108,6 +108,7 @@ NEW_BRANCH="releases/${MAJOR_VERSION}/${TAG}"
 echo -e "\n - Create a new branch $NEW_BRANCH"
 git checkout -b $NEW_BRANCH
 echo -e "\n - Pushing to the new branch"
+git add .
 git commit -m "IMPORT: v${TAG}"
 git push --set-upstream origin $NEW_BRANCH
 
