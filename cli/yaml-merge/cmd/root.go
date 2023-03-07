@@ -1,6 +1,3 @@
-/*
-Copyright © 2023 Henry Pham minhhieu060799@gmail.com
-*/
 package cmd
 
 import (
