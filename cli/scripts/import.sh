@@ -67,6 +67,9 @@ if [ "$IS_MAJOR_VERSION_EXISTING" = "1" ]; then
 else
     echo -e "\n - $MAJOR_VERSION already exists, check if commit is latest"
     CURRENT_MAJOR_VERSION_COMMIT_SHA=`git submodule status releases/${MAJOR_VERSION}/latest | head -n1 | awk '{print $1;}'`
+    CURRENT_MAJOR_VERSION_COMMIT_SHA=${CURRENT_MAJOR_VERSION_COMMIT_SHA:1} # to remove +/-/ prefix
+    echo -e "CURRENT_MAJOR_VERSION_COMMIT_SHA: ${CURRENT_MAJOR_VERSION_COMMIT_SHA}"
+    echo -e "COMMIT_SHA: ${COMMIT_SHA}"
     if [ "$CURRENT_MAJOR_VERSION_COMMIT_SHA" = "$COMMIT_SHA" ]; then
       echo -e "\n - Already latest, nothing to commit. Exiting now"
       exit
