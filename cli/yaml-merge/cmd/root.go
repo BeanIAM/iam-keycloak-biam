@@ -4,10 +4,20 @@ import (
 	"errors"
 	"fmt"
 	"gopkg.in/yaml.v3"
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
+)
+
+const (
+	ReleasesDir = "releases"
+	LatestDir   = "latest"
+	PatchesDir  = "patches"
+	KeycloakDir = "keycloak"
+	DevDir      = "dev"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -17,52 +27,106 @@ var rootCmd = &cobra.Command{
 	Long:  `When we run patch v20, it must merge ci.yml in the patches folder with ci.yml in the upstream keycloak folder and save the output result in the file with path releases/v20/latest/dev/.github/workflows/ci.yml.`,
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		const (
-			releasesDir    = "./releases"
-			latestDir      = "latest"
-			patchesDir     = "patches"
-			keycloakDir    = "keycloak"
-			devDir         = "dev"
-			workflowsDir   = ".github/workflows"
-			ciYamlFilename = "ci.yml"
-		)
-
-		versionPath := fmt.Sprintf("%s/%s/%s/%s/%s/%s", releasesDir, args[0], latestDir, patchesDir, workflowsDir, ciYamlFilename)
-		keycloakPath := fmt.Sprintf("%s/%s/%s/%s/%s/%s", releasesDir, args[0], latestDir, keycloakDir, workflowsDir, ciYamlFilename)
-		targetPath := fmt.Sprintf("%s/%s/%s/%s/%s/%s", releasesDir, args[0], latestDir, devDir, workflowsDir, ciYamlFilename)
-
+		versionPath := fmt.Sprintf("%s/%s", ReleasesDir, args[0])
 		if _, err := os.Stat(versionPath); os.IsNotExist(err) {
-			return errors.New(fmt.Sprintf("Version not found (%s)", versionPath))
+			return errors.New(fmt.Sprintf("Version not found: %s", versionPath))
 		}
 
-		targetFile := CIFile{}
-		for _, path := range []string{keycloakPath, versionPath} {
-			file, err := readCIFile(path)
-			if os.IsNotExist(err) {
-				return fmt.Errorf("file not found (%s)", path)
-			} else if err != nil {
-				return err
-			}
-			targetFile.merge(file)
-		}
-		err := targetFile.writeCIFile(targetPath)
+		// args[0]: given version
+		downstreamFolder := fmt.Sprintf("%s/%s/%s/%s", ReleasesDir, args[0], LatestDir, PatchesDir)
+		upstreamFolder := fmt.Sprintf("%s/%s/%s/%s", ReleasesDir, args[0], LatestDir, KeycloakDir)
+		devFolder := fmt.Sprintf("%s/%s/%s/%s", ReleasesDir, args[0], LatestDir, DevDir)
+
+		downstreamFiles, err := findYAMLFiles(downstreamFolder)
 		if err != nil {
-			return err
+			return nil
 		}
-		cmd.Println("Merge successfully")
+
+		errorFile, err := os.OpenFile("error.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Error: %s", err)
+		}
+		defer errorFile.Close()
+		log.SetOutput(errorFile)
+
+		for _, downstreamFile := range downstreamFiles {
+			fmt.Printf("Merging file %s", downstreamFile)
+
+			// Read upstream yaml file
+			upstreamFile := strings.Replace(downstreamFile, downstreamFolder, upstreamFolder, 1)
+			if _, err := os.Stat(upstreamFile); os.IsNotExist(err) {
+				log.Println(fmt.Sprintf("File not found: %s", upstreamFile))
+				continue
+			}
+
+			// read yaml files
+			sourceFile, err := readWorkflowFile(upstreamFile)
+			if err != nil {
+				errMsg := fmt.Sprintf("Failed to read file %q: %v", upstreamFile, err)
+				log.Println(errMsg)
+				fmt.Println(errMsg)
+				continue
+			}
+			targetFile, err := readWorkflowFile(downstreamFile)
+			if err != nil {
+				errMsg := fmt.Sprintf("Failed to read file %q: %v", upstreamFile, err)
+				log.Println(errMsg)
+				fmt.Println(errMsg)
+				continue
+			}
+			sourceFile.merge(targetFile)
+
+			devFile := strings.Replace(downstreamFile, downstreamFolder, devFolder, 1)
+			err = sourceFile.writeCIFile(devFile)
+			if err != nil {
+				log.Printf("Failed to write file %q: %v", devFile, err)
+			}
+		}
 		return nil
 	},
 }
 
-func (f *CIFile) merge(srcFile CIFile) {
-	f.Name = srcFile.Name
-	f.RunName = srcFile.RunName
-	f.On = srcFile.On
+func findYAMLFiles(dir string) ([]string, error) {
+	var yamlFiles []string
+
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			subdir := filepath.Join(dir, file.Name())
+			subdirYAMLFiles, err := findYAMLFiles(subdir)
+			if err != nil {
+				return nil, err
+			}
+			yamlFiles = append(yamlFiles, subdirYAMLFiles...)
+		} else {
+			fileName := filepath.Ext(file.Name())
+			if fileName == ".yaml" || fileName == ".yml" {
+				yamlFiles = append(yamlFiles, filepath.Join(dir, file.Name()))
+			}
+		}
+	}
+
+	return yamlFiles, nil
+}
+
+func (f *Workflow) merge(targetFile Workflow) error {
+	if targetFile.Name != "" {
+		f.Name = targetFile.Name
+	}
+
+	if targetFile.RunName != "" {
+		f.RunName = targetFile.RunName
+	}
+	//f.On = targetFile.On
 
 	if f.Jobs == nil {
-		f.Jobs = srcFile.Jobs
+		f.Jobs = targetFile.Jobs
 	} else {
-		for key, value := range srcFile.Jobs {
+		for key, value := range targetFile.Jobs {
 			if _, ok := f.Jobs[key]; !ok {
 				f.Jobs[key] = value
 			} else {
@@ -72,28 +136,29 @@ func (f *CIFile) merge(srcFile CIFile) {
 			}
 		}
 	}
+	return nil
 }
 
-type CIFile struct {
+type Workflow struct {
 	Name    string                            `yaml:"name,omitempty"`
 	RunName string                            `yaml:"run-name,omitempty"`
-	On      map[string]map[string]interface{} `yaml:"on"`
+	On      map[string]interface{}            `yaml:"on"`
 	Jobs    map[string]map[string]interface{} `yaml:"jobs"`
 }
 
-func readCIFile(filePath string) (ciFile CIFile, err error) {
+func readWorkflowFile(filePath string) (ciFile Workflow, err error) {
 	fileBytes, err := os.ReadFile(filePath)
 	if err != nil {
 		return ciFile, err
 	}
 	parseErr := yaml.Unmarshal(fileBytes, &ciFile)
 	if parseErr != nil {
-		return CIFile{}, parseErr
+		return ciFile, parseErr
 	}
 	return ciFile, nil
 }
 
-func (f *CIFile) writeCIFile(path string) error {
+func (f *Workflow) writeCIFile(path string) error {
 	data, err := yaml.Marshal(f)
 	if err != nil {
 		return err
