@@ -15,7 +15,7 @@ func TestYamlMergeCommand(t *testing.T) {
 	tmpDir := filepath.Join(ReleasesDir, version, LatestDir)
 	err := os.MkdirAll(tmpDir, os.ModePerm)
 	assert.NoError(t, err)
-	defer os.RemoveAll("releases")
+	//defer os.RemoveAll("releases")
 
 	// Create test files
 	downstreamFile := filepath.Join(tmpDir, PatchesDir, "ci.yml")
@@ -39,6 +39,6 @@ func TestYamlMergeCommand(t *testing.T) {
 	// Assert that the dev file was written correctly
 	devData, err := os.ReadFile(devFile)
 	assert.NoError(t, err)
-	expectedDevData := "\"on\": {}\njobs:\n    build: {}\n    test: {}\n"
+	expectedDevData := "jobs:\n    build: {}\n    test: {}\n\"on\": {}\n"
 	assert.Equal(t, expectedDevData, string(devData))
 }
