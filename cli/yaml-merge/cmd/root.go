@@ -3,10 +3,8 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/knadh/koanf/parsers/yaml"
-	"github.com/knadh/koanf/providers/file"
-	"github.com/knadh/koanf/v2"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 	"log"
 	"os"
 	"path/filepath"
@@ -60,7 +58,21 @@ var rootCmd = &cobra.Command{
 				continue
 			}
 
-			devFile := strings.Replace(downstreamFile, downstreamFolder, devFolder, 1)
+			sourceFile, err := unmarshalYAMLFile(upstreamFile)
+			if err != nil {
+				log.Printf("Error parsing %q: %v", upstreamFile, err)
+			}
+			overrideFile, err := unmarshalYAMLFile(downstreamFile)
+			if err != nil {
+				log.Printf("Error parsing %q: %v", downstreamFile, err)
+			}
+
+			err = recursiveMerge(&overrideFile, &sourceFile)
+			if err != nil {
+				log.Printf("Error merging from %q to %q:\n %v", downstreamFile, upstreamFile, err)
+			}
+
+			targetPath := strings.Replace(downstreamFile, downstreamFolder, devFolder, 1)
 			_, err = os.Stat(devFolder)
 			if os.IsNotExist(err) {
 				err = os.MkdirAll(devFolder, os.ModePerm)
@@ -68,16 +80,112 @@ var rootCmd = &cobra.Command{
 					return err
 				}
 			}
-
-			err = merge(upstreamFile, downstreamFile, devFile)
+			err = writeYamlNodeToFile(&sourceFile, targetPath)
 			if err != nil {
-				log.Printf("Failed to write file %q: %v", devFile, err)
+				log.Printf("Error writing %q: %v", targetPath, err)
 			}
 		}
 		return nil
 	},
 }
 
+func nodesEqual(l, r *yaml.Node) bool {
+	if l.Kind == yaml.ScalarNode && r.Kind == yaml.ScalarNode {
+		return l.Value == r.Value
+	}
+	panic("equals on non-scalars not implemented!")
+}
+
+// recursiveMerge recursively merges two YAML nodes, keeping the order of the content in the "into" node. It checks if
+// the two nodes are of the same kind, and if so, it merges the content of the "from" node into the "into" node by
+// either appending it (if it's a sequence node) or merging it recursively (if it's a mapping node). If a key from the
+// "from" node is not found in the "into" node, it is added to the end. If a different kind of node is encountered,
+// an error is returned.
+func recursiveMerge(from, into *yaml.Node) error {
+	if from.Kind != into.Kind {
+		return errors.New("cannot merge nodes of different kinds")
+	}
+	switch from.Kind {
+	case yaml.MappingNode:
+		for i := 0; i < len(from.Content); i += 2 {
+			found := false
+			for j := 0; j < len(into.Content); j += 2 {
+				if nodesEqual(from.Content[i], into.Content[j]) {
+					found = true
+					if err := recursiveMerge(from.Content[i+1], into.Content[j+1]); err != nil {
+						return errors.New("at key " + from.Content[i].Value + ": " + err.Error())
+					}
+					break
+				}
+			}
+			if !found {
+				into.Content = append(into.Content, from.Content[i:i+2]...)
+			}
+		}
+	case yaml.SequenceNode:
+		into.Content = append(into.Content, from.Content...)
+	case yaml.DocumentNode:
+		err := recursiveMerge(from.Content[0], into.Content[0])
+		if err != nil {
+			return err
+		}
+	default:
+		return errors.New("can only merge mapping and sequence nodes")
+	}
+	return nil
+}
+
+func writeYamlNodeToFile(node *yaml.Node, filepath string) error {
+	file, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Encode the YAML node to a []byte slice
+	encodedYaml, err := yaml.Marshal(node)
+	if err != nil {
+		return err
+	}
+
+	// Write the encoded YAML to the file
+	_, err = file.Write(encodedYaml)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func marshalYAMLFile(file *map[string]interface{}, path string) (err error) {
+	data, err := yaml.Marshal(&file)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(path, data, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// unmarshalYAMLFile reads the contents of a YAML file at the given file path and
+// unmarshals the contents into a map of interface{} types.
+func unmarshalYAMLFile(filePath string) (data yaml.Node, err error) {
+	file, err := os.ReadFile(filePath)
+	if err != nil {
+		return yaml.Node{}, err
+	}
+	err = yaml.Unmarshal(file, &data)
+	if err != nil {
+		return yaml.Node{}, err
+	}
+	return data, nil
+}
+
+// findYAMLFiles recursively searches for YAML files in the given directory
+// and its subdirectories, and returns a slice of file paths that match the
+// ".yaml" or ".yml" file extension.
 func findYAMLFiles(dir string) ([]string, error) {
 	var yamlFiles []string
 
@@ -105,25 +213,29 @@ func findYAMLFiles(dir string) ([]string, error) {
 	return yamlFiles, nil
 }
 
-func merge(sourcePath, overridePath, targetPath string) (err error) {
-	k := koanf.New(".")
-	err = k.Load(file.Provider(sourcePath), yaml.Parser())
-	if err != nil {
-		return err
+// mergeMaps merges the contents of two maps, with the values in the
+// overrideFile taking precedence over those in the sourceFile.
+func mergeMaps(sourceFile, overrideFile map[string]interface{}) map[string]interface{} {
+	out := make(map[string]interface{})
+	var keys []interface{}
+	for k := range sourceFile {
+		keys = append(keys, k)
 	}
-	err = k.Load(file.Provider(overridePath), yaml.Parser())
-	if err != nil {
-		return err
+	for k, v := range sourceFile {
+		out[k] = v
 	}
-	data, err := k.Marshal(yaml.Parser())
-	if err != nil {
-		return err
+	for k, v := range overrideFile {
+		if v, ok := v.(map[string]interface{}); ok {
+			if bv, ok := out[k]; ok {
+				if bv, ok := bv.(map[string]interface{}); ok {
+					out[k] = mergeMaps(bv, v)
+					continue
+				}
+			}
+		}
+		out[k] = v
 	}
-	err = os.WriteFile(targetPath, data, os.ModePerm)
-	if err != nil {
-		return err
-	}
-	return nil
+	return out
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
