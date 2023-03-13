@@ -67,6 +67,9 @@ if [ "$IS_MAJOR_VERSION_EXISTING" = "1" ]; then
 else
     echo -e "\n - $MAJOR_VERSION already exists, check if commit is latest"
     CURRENT_MAJOR_VERSION_COMMIT_SHA=`git submodule status releases/${MAJOR_VERSION}/latest | head -n1 | awk '{print $1;}'`
+    CURRENT_MAJOR_VERSION_COMMIT_SHA=${CURRENT_MAJOR_VERSION_COMMIT_SHA:1} # to remove +/-/ prefix
+    echo -e "CURRENT_MAJOR_VERSION_COMMIT_SHA: ${CURRENT_MAJOR_VERSION_COMMIT_SHA}"
+    echo -e "COMMIT_SHA: ${COMMIT_SHA}"
     if [ "$CURRENT_MAJOR_VERSION_COMMIT_SHA" = "$COMMIT_SHA" ]; then
       echo -e "\n - Already latest, nothing to commit. Exiting now"
       exit
@@ -108,6 +111,7 @@ NEW_BRANCH="releases/${MAJOR_VERSION}/${TAG}"
 echo -e "\n - Create a new branch $NEW_BRANCH"
 git checkout -b $NEW_BRANCH
 echo -e "\n - Pushing to the new branch"
+git add .
 git commit -m "IMPORT: v${TAG}"
 git push --set-upstream origin $NEW_BRANCH
 
