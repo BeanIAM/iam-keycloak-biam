@@ -33,7 +33,7 @@ git diff --pretty --diff-filter=D ${TARGET_BRANCH} ${SUB_MODULE_KEYLOAK_PATH} > 
 
 #Any new files that were added should be copied to overrides folder.
 for modification in $(git diff --name-only --pretty --diff-filter=A ${TARGET_BRANCH} ${SUB_MODULE_KEYLOAK_PATH});
-do cp ../../$modification ../../releases/${MAJOR_VERSION}/latest/overrides; done
+do cp $modification releases/${MAJOR_VERSION}/latest/overrides; done
 
 #When every step above has been done, git keycloak submodule should be git reset --hard to discard all changes.
 git restore --source=HEAD --staged --worktree -- ${SUB_MODULE_KEYLOAK_PATH}

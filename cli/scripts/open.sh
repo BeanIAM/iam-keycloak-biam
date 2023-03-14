@@ -10,14 +10,14 @@ fi
 RELEASE_LATEST_PATH="releases/${MAJOR_VERSION}/latest"
 
 #go to keyloak folder
-cd "${RELEASE_LATEST_PATH}"/keyloak
+cd "${RELEASE_LATEST_PATH}"/keycloak
+
 #patches/modifications.diff is applied back to keycloak
 #need to check whether file exist
-git apply ../patches/modification.diff
+git apply ../patches/modifications.diff
 #need to check whether file exist
 #patches/removals.diff is applied back to keycloak
 git apply ../patches/removals.diff
 #need to check whether folder is empty
 #files and folders in overrides are copied to keycloak
-cp ../overrides "${RELEASE_LATEST_PATH}"/keyloak
-
+cp -R ../overrides/ ./
