@@ -49,27 +49,27 @@ var rootCmd = &cobra.Command{
 		log.SetOutput(errorFile)
 
 		for _, downstreamFile := range downstreamFiles {
-			fmt.Printf("Merging file %s", downstreamFile)
+			fmt.Printf("Merging file %s \n", downstreamFile)
 
 			// get upstream yaml path
 			upstreamFile := strings.Replace(downstreamFile, downstreamFolder, upstreamFolder, 1)
 			if _, err := os.Stat(upstreamFile); os.IsNotExist(err) {
-				log.Println(fmt.Sprintf("File not found: %s", upstreamFile))
+				log.Printf("File not found: %s \n", upstreamFile)
 				continue
 			}
 
 			sourceFile, err := unmarshalYAMLFile(upstreamFile)
 			if err != nil {
-				log.Printf("Error parsing %q: %v", upstreamFile, err)
+				log.Printf("Error parsing %q: %v \n", upstreamFile, err)
 			}
 			overrideFile, err := unmarshalYAMLFile(downstreamFile)
 			if err != nil {
-				log.Printf("Error parsing %q: %v", downstreamFile, err)
+				log.Printf("Error parsing %q: %v \n", downstreamFile, err)
 			}
 
 			err = recursiveMerge(&overrideFile, &sourceFile)
 			if err != nil {
-				log.Printf("Error merging from %q to %q:\n %v", downstreamFile, upstreamFile, err)
+				log.Printf("Error merging from %q to %q:\n %v \n", downstreamFile, upstreamFile, err)
 			}
 
 			targetPath := strings.Replace(downstreamFile, downstreamFolder, devFolder, 1)
@@ -82,7 +82,7 @@ var rootCmd = &cobra.Command{
 			}
 			err = writeYamlNodeToFile(&sourceFile, targetPath)
 			if err != nil {
-				log.Printf("Error writing %q: %v", targetPath, err)
+				log.Printf("Error writing %q: %v \n", targetPath, err)
 			}
 		}
 		return nil
