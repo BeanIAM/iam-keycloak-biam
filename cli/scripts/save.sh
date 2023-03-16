@@ -10,8 +10,9 @@ SUB_MODULE_KEYCLOAK_PATH="releases/${MAJOR_VERSION}/latest/keycloak"
 TARGET_BRANCH="origin/master"
 
 #.github folder should be copied to cicd folder
-echo "copy .github folder to cicd"
-cp -r ./.github/ releases/${MAJOR_VERSION}/cicd/
+echo "copy upstream .github folder to cicd"
+LATEST_RELEASE_PATH=releases/${MAJOR_VERSION}/latest
+cp -r ${LATEST_RELEASE_PATH}/keycloak/.github ${LATEST_RELEASE_PATH}/cicd/
 
 echo "Check git diff"
 #reference
