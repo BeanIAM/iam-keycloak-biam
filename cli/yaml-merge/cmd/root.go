@@ -96,6 +96,7 @@ func nodesEqual(l, r *yaml.Node) bool {
 	panic("equals on non-scalars not implemented!")
 }
 
+// This function uses code adapted from Stack Overflow answer https://stackoverflow.com/a/65784135
 // recursiveMerge recursively merges two YAML nodes, keeping the order of the content in the "into" node. It checks if
 // the two nodes are of the same kind, and if so, it merges the content of the "from" node into the "into" node by
 // either appending it (if it's a sequence node) or merging it recursively (if it's a mapping node). If a key from the
@@ -135,6 +136,11 @@ func recursiveMerge(from, into *yaml.Node) error {
 	return nil
 }
 
+// writeYamlNodeToFile writes a given YAML node to a file specified by filepath.
+// It encodes the YAML node to a []byte slice using the "yaml.Marshal" function
+// and writes the encoded YAML to the file. The function returns an error if the
+// file could not be created or if there was an error while encoding or writing
+// the YAML to the file.
 func writeYamlNodeToFile(node *yaml.Node, filepath string) error {
 	file, err := os.Create(filepath)
 	if err != nil {
@@ -154,18 +160,6 @@ func writeYamlNodeToFile(node *yaml.Node, filepath string) error {
 		return err
 	}
 
-	return nil
-}
-
-func marshalYAMLFile(file *map[string]interface{}, path string) (err error) {
-	data, err := yaml.Marshal(&file)
-	if err != nil {
-		return err
-	}
-	err = os.WriteFile(path, data, os.ModePerm)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -211,31 +205,6 @@ func findYAMLFiles(dir string) ([]string, error) {
 	}
 
 	return yamlFiles, nil
-}
-
-// mergeMaps merges the contents of two maps, with the values in the
-// overrideFile taking precedence over those in the sourceFile.
-func mergeMaps(sourceFile, overrideFile map[string]interface{}) map[string]interface{} {
-	out := make(map[string]interface{})
-	var keys []interface{}
-	for k := range sourceFile {
-		keys = append(keys, k)
-	}
-	for k, v := range sourceFile {
-		out[k] = v
-	}
-	for k, v := range overrideFile {
-		if v, ok := v.(map[string]interface{}); ok {
-			if bv, ok := out[k]; ok {
-				if bv, ok := bv.(map[string]interface{}); ok {
-					out[k] = mergeMaps(bv, v)
-					continue
-				}
-			}
-		}
-		out[k] = v
-	}
-	return out
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
