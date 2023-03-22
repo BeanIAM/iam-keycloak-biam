@@ -1,5 +1,7 @@
 **/build/*
 !**/build/.gitkeep
+.idea
+error.log
 
 target/
 pom.xml.tag

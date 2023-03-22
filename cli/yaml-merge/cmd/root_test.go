@@ -18,9 +18,9 @@ func TestYamlMergeCommand(t *testing.T) {
 	//defer os.RemoveAll("releases")
 
 	// Create test files
-	downstreamFile := filepath.Join(tmpDir, PatchesDir, "ci.yml")
-	upstreamFile := filepath.Join(tmpDir, KeycloakDir, "ci.yml")
-	devFile := filepath.Join(tmpDir, "dev/ci.yml")
+	downstreamFile := filepath.Join(tmpDir, PatchesDir, "/.github/workflows/ci.yml")
+	upstreamFile := filepath.Join(tmpDir, KeycloakDir, "/.github/workflows/ci.yml")
+	devFile := filepath.Join(tmpDir, "dev/.github/workflows/ci.yml")
 	err = os.MkdirAll(filepath.Dir(downstreamFile), os.ModePerm)
 	assert.NoError(t, err)
 	err = os.MkdirAll(filepath.Dir(upstreamFile), os.ModePerm)

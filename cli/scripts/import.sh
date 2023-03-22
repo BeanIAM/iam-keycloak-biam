@@ -35,7 +35,6 @@ git submodule foreach --recursive 'git fetch --tags --force'
 
 MAJOR_VERSION=$1
 
-# if [ -z "$MAJOR_VERSION" ]; then usage "ERROR | No major version provided"; exit 1; fi
 if [ -z "$MAJOR_VERSION" ]; then
   usage "WARNING | No major version provided, fetching the latest release"; MAJOR_VERSION=v; 
   TAG=$(curl --silent "https://api.github.com/repos/keycloak/keycloak/tags" | jq -rc '[.[] | select( .name | contains("nightly") | not )][0].name')
@@ -50,8 +49,6 @@ fi
 
 # find the latest git tag of major version
 # TAG=$(curl --silent "https://api.github.com/repos/keycloak/keycloak/tags" | jq -r '.[].name' | grep "${MAJOR_VERSION:1}" | grep -v nightly | head -n 1 || true)
-
-
 
 if [ -z "$TAG" ]; then echo -e "\n - ERROR | No git tag of the provided major version"; exit 1; fi
 

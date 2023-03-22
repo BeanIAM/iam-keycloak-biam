@@ -1,0 +1,72 @@
+name: CI Trigger
+
+on:
+  push:
+    branches:
+      - feature/cicd-16/schedule_github_action
+
+jobs:
+  create-github-action-run-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # Can we own this?
+      - name: webfactory/ssh-agent
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
+
+      - name: Set author identity
+        run: |
+          git config --global user.email "bot@peterbean.net"
+          git config --global user.name "BeanBot"
+
+      - name: Init Submodules
+        run: |
+          git submodule init master/keycloak
+          git submodule update master/keycloak
+
+      - name: Create CI branch
+        run: |
+          MAJOR_VERSION=master          
+
+          NEW_BRANCH="github-action-runs/${MAJOR_VERSION}"
+          echo -e "\n Check if $NEW_BRANCH exists"
+          EXISTS=`git ls-remote --heads git@github.com:BeanCloudServices/iam-keycloak-bcs.git $NEW_BRANCH | wc -l`
+          if [ $EXISTS = "1"]; then
+            echo -e "\n Branch already exists"
+            git checkout $NEW_BRANCH
+          else
+            echo -e "\n - Create a new branch $NEW_BRANCH"
+            git checkout -b $NEW_BRANCH
+          fi
+
+          mkdir ~/archive
+          mv ./* ~/archive/
+
+          mv ~/archive/master/keycloak/* .
+          mv ~/archive/master/keycloak/.mvn ./
+          mv ~/archive/master/keycloak/.github/actions .github/
+          mv ~/archive/master/keycloak/.github/fake_fips .github/
+          mv ~/archive/master/keycloak/.github/snyk .github/
+          mv ~/archive/master/keycloak/.github/scripts .github/
+          mv ~/archive/master/keycloak/.github/*.yml .github/
+
+          echo -e "\n - Pushing to the CI branch"
+          git add .
+          git commit -m "GithubActionRun for ${MAJOR_VERSION}"
+          git push -f --set-upstream origin $NEW_BRANCH
+
+          sleep 5
+          echo "TRIGGER GITHUB ACTION" > .github/triggergithubaction.txt
+          git add .github/triggergithubaction.txt
+          git commit -m "To trigger CI"
+          git push
+          
+          # git ls-remote --heads git@github.com:BeanCloudServices/iam-keycloak-bcs.git master | wc -l
+
+
+
+
+      
