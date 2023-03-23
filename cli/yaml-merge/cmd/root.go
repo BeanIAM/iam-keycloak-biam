@@ -3,12 +3,13 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -26,15 +27,28 @@ var rootCmd = &cobra.Command{
 	Long:  `When we run patch v20, it must merge ci.yml in the patches folder with ci.yml in the upstream keycloak folder and save the output result in the file with path releases/v20/latest/dev/.github/workflows/ci.yml.`,
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		versionPath := fmt.Sprintf("%s/%s", ReleasesDir, args[0])
+		version := args[0]
+		releaseDir := ReleasesDir
+		// version: given version
+		releaseFolder := fmt.Sprintf("%s/%s/%s", releaseDir, version, LatestDir)
+
+		if version == "master" {
+			releaseFolder = "master"
+			releaseDir = "./"
+		}
+
+		versionPath := fmt.Sprintf("%s/%s", releaseDir, version)
 		if _, err := os.Stat(versionPath); os.IsNotExist(err) {
 			return errors.New(fmt.Sprintf("Version not found: %s", versionPath))
 		}
 
-		// args[0]: given version
-		downstreamFolder := fmt.Sprintf("%s/%s/%s/%s", ReleasesDir, args[0], LatestDir, PatchesDir)
-		upstreamFolder := fmt.Sprintf("%s/%s/%s/%s", ReleasesDir, args[0], LatestDir, KeycloakDir)
-		devFolder := fmt.Sprintf("%s/%s/%s/%s", ReleasesDir, args[0], LatestDir, DevDir)
+		downstreamFolder := fmt.Sprintf("%s/%s", releaseFolder, PatchesDir)
+		upstreamFolder := fmt.Sprintf("%s/%s", releaseFolder, KeycloakDir)
+		devFolder := fmt.Sprintf("%s/%s", releaseFolder, DevDir)
+
+		fmt.Printf("downstreamFolder %s \n", downstreamFolder)
+		fmt.Printf("upstreamFolder %s \n", upstreamFolder)
+		fmt.Printf("devFolder %s \n", devFolder)
 
 		downstreamFiles, err := findYAMLFiles(downstreamFolder)
 		if err != nil {
@@ -49,7 +63,7 @@ var rootCmd = &cobra.Command{
 		log.SetOutput(errorFile)
 
 		for _, downstreamFile := range downstreamFiles {
-			fmt.Printf("Merging file %s \n", downstreamFile)
+			fmt.Printf("Merging downstream file %s \n", downstreamFile)
 
 			// get upstream yaml path
 			upstreamFile := strings.Replace(downstreamFile, downstreamFolder, upstreamFolder, 1)
@@ -57,6 +71,7 @@ var rootCmd = &cobra.Command{
 				log.Printf("File not found: %s \n", upstreamFile)
 				continue
 			}
+			fmt.Printf("upstreamFile %s \n", upstreamFile)
 
 			sourceFile, err := unmarshalYAMLFile(upstreamFile)
 			if err != nil {
@@ -80,6 +95,8 @@ var rootCmd = &cobra.Command{
 					return err
 				}
 			}
+			fmt.Printf("targetPath %s \n", targetPath)
+
 			err = writeYamlNodeToFile(&sourceFile, targetPath)
 			if err != nil {
 				log.Printf("Error writing %q: %v \n", targetPath, err)
@@ -141,12 +158,30 @@ func recursiveMerge(from, into *yaml.Node) error {
 // and writes the encoded YAML to the file. The function returns an error if the
 // file could not be created or if there was an error while encoding or writing
 // the YAML to the file.
-func writeYamlNodeToFile(node *yaml.Node, filepath string) error {
-	file, err := os.Create(filepath)
+func writeYamlNodeToFile(node *yaml.Node, filePath string) error {
+	devFile := filepath.Dir(filePath)
+	err := os.MkdirAll(devFile, os.ModePerm)
+
 	if err != nil {
+		errStr := err.Error()
+		fmt.Print(errStr)
 		return err
 	}
-	defer file.Close()
+
+	file, err := os.Create(filePath)
+
+	if err != nil {
+		errStr := err.Error()
+		fmt.Print(errStr)
+		return err
+	}
+
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			fmt.Printf("Cannot close file")
+		}
+	}(file)
 
 	// Encode the YAML node to a []byte slice
 	encodedYaml, err := yaml.Marshal(node)

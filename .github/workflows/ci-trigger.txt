@@ -1,0 +1,88 @@
+# name: CI Trigger
+
+# on:
+#   push:
+#     branches:
+#       - feature/cicd-16/schedule_github_action
+
+# jobs:
+#   create-github-action-run-branch-for-master:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
+#     # - uses: dorny/paths-filter@v2
+#     #   id: filter
+#     #   with:
+#     #     filters: |
+#     #       workflows:
+#     #         - '.github/workflows/**'
+#     # run only if 'workflows' files were changed
+#     # - name: workflow tests
+#     #   if: steps.filter.outputs.workflows == 'true'
+#     #   run: echo "Workflow file"
+
+#     # # run only if not 'workflows' files were changed
+#     # - name: not workflow tests
+#     #   if: steps.filter.outputs.workflows != 'true'
+#     #   run: echo "NOT workflow file"
+
+#       # Can we own this?
+#       - name: webfactory/ssh-agent
+#         uses: webfactory/ssh-agent@v0.7.0
+#         with:
+#           ssh-private-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
+
+#       - name: Set author identity
+#         run: |
+#           git config --global user.email "bot@peterbean.net"
+#           git config --global user.name "BeanBot"
+
+#       - name: Init Submodules
+#         run: |
+#           git submodule init master/keycloak
+#           git submodule update master/keycloak
+
+#       # - name: Create CI branch
+#       #   run: |
+#       #     MAJOR_VERSION=master          
+
+#       #     NEW_BRANCH="github-action-runs/${MAJOR_VERSION}"
+#       #     echo -e "\n Check if $NEW_BRANCH exists"
+#       #     EXISTS=`git ls-remote --heads git@github.com:BeanCloudServices/iam-keycloak-bcs.git $NEW_BRANCH | wc -l`
+#       #     if [ "$EXISTS" = "1" ]; then
+#       #       echo -e "\n Branch already exists"
+#       #       git fetch
+#       #       git checkout $NEW_BRANCH
+#       #     else
+#       #       echo -e "\n - Create a new branch $NEW_BRANCH"
+#       #       git checkout -b $NEW_BRANCH
+#       #     fi
+
+#       #     mkdir ~/archive
+#       #     mv ./* ~/archive/
+
+#       #     mv ~/archive/master/keycloak/* .
+#       #     rm -rf ./.mvn && mv ~/archive/master/keycloak/.mvn ./
+#       #     rm -rf .github/actions && mv ~/archive/master/keycloak/.github/actions .github/
+#       #     rm -rf .github/fake_fips && mv ~/archive/master/keycloak/.github/fake_fips .github/
+#       #     rm -rf .github/snyk && mv ~/archive/master/keycloak/.github/snyk .github/
+#       #     rm -rf .github/scripts && mv ~/archive/master/keycloak/.github/scripts .github/
+#       #     rm -rf .github/*.yml && mv ~/archive/master/keycloak/.github/*.yml .github/
+
+#       #     echo -e "\n - Pushing to the CI branch"
+#       #     git add .
+#       #     git commit --allow-empty -m "GithubActionRun for ${MAJOR_VERSION}"
+#       #     git push -f --set-upstream origin $NEW_BRANCH
+
+#       #     sleep 5
+#       #     echo "TRIGGER GITHUB ACTION" > .github/triggergithubaction.txt
+#       #     git add .github/triggergithubaction.txt
+#       #     git commit -m "To trigger CI"
+#       #     git push
+
+#       #     # git ls-remote --heads git@github.com:BeanCloudServices/iam-keycloak-bcs.git master | wc -l
+
+
+
+
+      
