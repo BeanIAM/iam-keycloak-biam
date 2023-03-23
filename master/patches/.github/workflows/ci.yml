@@ -1,0 +1,32 @@
+on:
+  workflow_call: ~
+        # inputs:
+        #     config-path:
+        #         required: true
+        #         type: string
+        # secrets:
+        #     envPAT:
+        #         required: true
+  create:
+      branches-ignore:    
+      - '*'         # matches every branch that doesn't contain a '/'
+      - '*/*'       # matches every branch containing a single '/'
+      - '**'        # matches every branch
+      - '!github-action-runs/master'   # excludes feature/cicd-16/schedule_github_action
+  push:
+    branches-ignore:    
+      - '*'         # matches every branch that doesn't contain a '/'
+      - '*/*'       # matches every branch containing a single '/'
+      - '**'        # matches every branch
+      - '!github-action-runs/master'   # excludes feature/cicd-16/schedule_github_action
+  pull_request:
+    branches-ignore:    
+      - '*'         # matches every branch that doesn't contain a '/'
+      - '*/*'       # matches every branch containing a single '/'
+      - '**'        # matches every branch
+
+# defaults:
+#   run: 
+#     shell: bash
+#     working-directory: ./master/keycloak/
+
