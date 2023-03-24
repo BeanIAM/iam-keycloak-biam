@@ -1,18 +1,13 @@
 name: Maven Cache
 description: Caches Maven artifacts
 
-# CustomBean
-defaults:
-  run:
-    shell: bash
-    working-directory: ./master/keycloak
-
 runs:
   using: composite
   steps:
     - id: weekly-cache-key
       name: Key for weekly rotation of cache
       shell: bash
+      working-directory: ./master/keycloak
       run: echo "key=mvn-`date -u "+%Y-%U"`" >> $GITHUB_OUTPUT
 
     - id: cache-maven-repository
@@ -26,6 +21,7 @@ runs:
       name: Check cache has no Keycloak artifacts
       if: steps.cache-maven-repository.outputs.cache-hit == 'true'
       shell: bash
+      working-directory: ./master/keycloak
       run: |
         if ( stat ~/.m2/repository/org/keycloak &>/dev/null ); then
           echo "Found org/keycloak artifacts in Maven repository cache"
