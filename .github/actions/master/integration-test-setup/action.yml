@@ -10,12 +10,8 @@ inputs:
     description: JDK version
     required: false
     default: 17
-
-# CustomBean
-defaults:
-  run:
-    shell: bash
-    working-directory: ./master/keycloak
+  github-ssh-key:
+    description: GitHub SSH Key from Org secret
 
 runs:
   using: composite
@@ -32,17 +28,22 @@ runs:
     - name: webfactory/ssh-agent
       uses: webfactory/ssh-agent@v0.7.0
       with:
-        ssh-private-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
+        ssh-private-key: ${{ inputs.github-ssh-key }}
 
     - name: Set author identity
+      shell: bash
+      working-directory: ./master/keycloak
       run: |
         git config --global user.email "bot@peterbean.net"
         git config --global user.name "BeanBot"
 
     - name: Init Submodules
+      shell: bash
+      working-directory: ./master/keycloak
       run: |
-        git submodule init master/keycloak
-        git submodule update master/keycloak
+        git fetch
+        git submodule init .
+        git submodule update .
 
 
     - id: maven-cache
@@ -58,8 +59,10 @@ runs:
       uses: actions/download-artifact@v3
       with:
         name: m2-keycloak.tzts
+        path: master/keycloak
 
     - id: extract-maven-artifacts
       name: Extract Keycloak Maven artifacts
       shell: bash
+      working-directory: ./master/keycloak
       run: tar -C ~/ --use-compress-program unzstd -xf m2-keycloak.tzts
