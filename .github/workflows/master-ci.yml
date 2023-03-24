@@ -244,6 +244,9 @@ jobs:
   databases-new-store:
     name: Databases New Store
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
     steps:
       - id: matrix-db
         # language=bash
@@ -271,6 +274,8 @@ jobs:
       - id: integration-test-setup
         name: Integration test setup
         uses: ./.github/actions/master/integration-test-setup
+        with:
+          github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
       - name: Run base tests
         run: |
           declare -A PARAMS
@@ -312,6 +317,8 @@ jobs:
       - id: integration-test-setup
         name: Integration test setup
         uses: ./.github/actions/master/integration-test-setup
+        with:
+          github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
       - name: Run base tests
         run: |
           TESTS=`testsuite/integration-arquillian/tests/base/testsuites/suite.sh database`
@@ -343,6 +350,8 @@ jobs:
       - id: integration-test-setup
         name: Integration test setup
         uses: ./.github/actions/master/integration-test-setup
+        with:
+          github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
       - name: Run model tests
         run: testsuite/model/test-all-profiles.sh -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }}
       - name: Upload JVM Heapdumps
