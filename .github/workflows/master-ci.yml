@@ -120,41 +120,41 @@ jobs:
         with:
           api-key: ${{ secrets.FORESIGHT_API_KEY }}
           surefire-reports-path: '**/target/surefire-reports/*.xml'
-#   base-integration-tests:
-#     name: Base IT
-#     needs: build
-#     runs-on: ubuntu-latest
-#     timeout-minutes: 100
-#     strategy:
-#       matrix:
-#         group: [1, 2, 3, 4, 5, 6]
-#       fail-fast: false
-#     steps:
-#       - uses: actions/checkout@v3
-#       - id: integration-test-setup
-#         name: Integration test setup
-#         uses: ./.github/actions/master/integration-test-setup
-#       - name: Run base tests
-#         run: |
-#           TESTS=`testsuite/integration-arquillian/tests/base/testsuites/base-suite.sh ${{ matrix.group }}`
-#           echo "Tests: $TESTS"
-#           ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-quarkus -Dtest=$TESTS -pl testsuite/integration-arquillian/tests/base | misc/log/trimmer.sh
-#       - name: Upload JVM Heapdumps
-#         if: always()
-#         uses: ./.github/actions/master/upload-heapdumps
-#       - id: upload-surefire-reports
-#         name: Upload Surefire reports
-#         uses: ./.github/actions/master/upload-surefire-reports
-#         if: always()
-#         with:
-#           api-key: ${{ secrets.FORESIGHT_API_KEY }}
-#           surefire-reports-path: 'testsuite/integration-arquillian/tests/base/target/surefire-reports/*.xml'
-#       - uses: ./.github/actions/master/upload-flaky-tests
-#         name: Upload flaky tests
-#         env:
-#           GH_TOKEN: ${{ github.token }}
-#         with:
-#           job-name: Base IT
+  base-integration-tests:
+    name: Base IT
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    strategy:
+      matrix:
+        group: [1, 2, 3, 4, 5, 6]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+      - id: integration-test-setup
+        name: Integration test setup
+        uses: ./.github/actions/master/integration-test-setup
+      - name: Run base tests
+        run: |
+          TESTS=`testsuite/integration-arquillian/tests/base/testsuites/base-suite.sh ${{ matrix.group }}`
+          echo "Tests: $TESTS"
+          ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-quarkus -Dtest=$TESTS -pl testsuite/integration-arquillian/tests/base | misc/log/trimmer.sh
+      - name: Upload JVM Heapdumps
+        if: always()
+        uses: ./.github/actions/master/upload-heapdumps
+      - id: upload-surefire-reports
+        name: Upload Surefire reports
+        uses: ./.github/actions/master/upload-surefire-reports
+        if: always()
+        with:
+          api-key: ${{ secrets.FORESIGHT_API_KEY }}
+          surefire-reports-path: 'testsuite/integration-arquillian/tests/base/target/surefire-reports/*.xml'
+      - uses: ./.github/actions/master/upload-flaky-tests
+        name: Upload flaky tests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          job-name: Base IT
 #   quarkus-integration-tests:
 #     name: Quarkus IT
 #     needs: build
