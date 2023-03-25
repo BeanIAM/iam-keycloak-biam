@@ -405,7 +405,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Fake fips
         run: |
-          cd .github/fake_fips
+          cd .github/fake_fips/master
           make
           sudo insmod fake_fips.ko
       - id: unit-test-setup
@@ -439,7 +439,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Fake fips
         run: |
-          cd .github/fake_fips
+          cd .github/fake_fips/master
           make
           sudo insmod fake_fips.ko
       - id: integration-test-setup
