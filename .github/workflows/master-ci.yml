@@ -404,6 +404,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Fake fips
+        working-directory: ./
         run: |
           cd .github/fake_fips/master
           make
@@ -438,6 +439,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Fake fips
+        working-directory: ./
         run: |
           cd .github/fake_fips/master
           make
