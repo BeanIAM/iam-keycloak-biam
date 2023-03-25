@@ -1,32 +1,36 @@
 on:
-  workflow_call: ~
-        # inputs:
-        #     config-path:
-        #         required: true
-        #         type: string
-        # secrets:
-        #     envPAT:
-        #         required: true
-  create:
-      branches-ignore:    
-      - '*'         # matches every branch that doesn't contain a '/'
-      - '*/*'       # matches every branch containing a single '/'
-      - '**'        # matches every branch
-      - '!github-action-runs/master'   # excludes feature/cicd-16/schedule_github_action
+  schedule:
+    - cron: 0 20,23,2,5 * * *
   push:
-    branches-ignore:    
-      - '*'         # matches every branch that doesn't contain a '/'
-      - '*/*'       # matches every branch containing a single '/'
-      - '**'        # matches every branch
-      - '!github-action-runs/master'   # excludes feature/cicd-16/schedule_github_action
-  pull_request:
-    branches-ignore:    
-      - '*'         # matches every branch that doesn't contain a '/'
-      - '*/*'       # matches every branch containing a single '/'
-      - '**'        # matches every branch
+    paths: 
+       - 'master/**'
+       - '.github/workflows/master-*.yml'
+       - '.github/actions/master/**'
+    branches-ignore:
+      - master
+      - dependabot/**
+  # pull_request: ~
+    # branches-ignore: # to ignore
+    #   - '*' # matches every branch that doesn't contain a '/'
+    #   - '*/*' # matches every branch containing a single '/'
+    #   - '**' # matches every branch
+  workflow_dispatch:
+  workflow_call: ~
+  # inputs:
+  #     config-path:
+  #         required: true
+  #         type: string
+  # secrets:
+  #     envPAT:
+  #         required: true
+  # create:
+  #   branches-ignore:
+  #     - '*' # matches every branch that doesn't contain a '/'
+  #     - '*/*' # matches every branch containing a single '/'
+  #     - '**' # matches every branch
+  #     - '!github-action-runs/master' # excludes feature/cicd-16/schedule_github_action
 
-# defaults:
-#   run: 
-#     shell: bash
-#     working-directory: ./master/keycloak/
-
+defaults:
+  run:
+    shell: bash
+    working-directory: ./master/keycloak
