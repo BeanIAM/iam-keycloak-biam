@@ -375,6 +375,8 @@ jobs:
       - id: integration-test-setup
         name: Integration test setup
         uses: ./.github/actions/master/integration-test-setup
+        with:
+          github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}        
       - name: Run cluster tests
         run: |
           ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-cluster-quarkus -Dsession.cache.owners=2 -Dtest=**.cluster.** -pl testsuite/integration-arquillian/tests/base  | misc/log/trimmer.sh
@@ -411,6 +413,7 @@ jobs:
         uses: ./.github/actions/master/unit-test-setup
         with:
           jdk-version: 17
+          github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}          
       - name: Run crypto tests
         run: docker run --rm --workdir /github/workspace -v "${{ github.workspace }}":"/github/workspace" -v "$HOME/.m2":"/root/.m2" registry.access.redhat.com/ubi9/ubi:latest .github/scripts/run-fips-ut.sh
       - name: Upload JVM Heapdumps
@@ -444,6 +447,7 @@ jobs:
         uses: ./.github/actions/master/integration-test-setup
         with:
           jdk-version: 17
+          github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
       - name: Prepare Quarkus distribution with BCFIPS
         run: ./mvnw install -nsu -B -e -pl testsuite/integration-arquillian/servers/auth-server/quarkus -Pauth-server-quarkus,auth-server-fips140-2
       - name: Run base tests
