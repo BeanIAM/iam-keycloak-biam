@@ -64,183 +64,183 @@ jobs:
         uses: ./.github/actions/master/build-keycloak
         with:
           github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
-  # unit-tests:
-  #   name: Base UT
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   timeout-minutes: 30
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - id: unit-test-setup
-  #       name: Unit test setup
-  #       uses: ./.github/actions/master/unit-test-setup
-  #       with:
-  #         github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
+  unit-tests:
+    name: Base UT
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v3
+      - id: unit-test-setup
+        name: Unit test setup
+        uses: ./.github/actions/master/unit-test-setup
+        with:
+          github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
       
-  #       # Can we own this?
-  #     - name: webfactory/ssh-agent
-  #       uses: webfactory/ssh-agent@v0.7.0
-  #       with:
-  #         ssh-private-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
+        # Can we own this?
+      - name: webfactory/ssh-agent
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
 
-  #     - name: Set author identity
-  #       shell: bash
-  #       working-directory: ./master/keycloak
-  #       run: |
-  #         git config --global user.email "bot@peterbean.net"
-  #         git config --global user.name "BeanBot"
+      - name: Set author identity
+        shell: bash
+        working-directory: ./master/keycloak
+        run: |
+          git config --global user.email "bot@peterbean.net"
+          git config --global user.name "BeanBot"
 
-  #     - name: Init Submodules
-  #       shell: bash
-  #       working-directory: ./master/keycloak
-  #       run: |
-  #         git fetch
-  #         git submodule init .
-  #         git submodule update .
+      - name: Init Submodules
+        shell: bash
+        working-directory: ./master/keycloak
+        run: |
+          git fetch
+          git submodule init .
+          git submodule update .
 
-  #     - name: Run unit tests
-  #       shell: bash
-  #       working-directory: ./master/keycloak      
-  #       run: |
-  #         SEP=""
-  #         PROJECTS=""
-  #         for i in `find -name '*Test.java' -type f | egrep -v './(testsuite|quarkus)/' | sed 's|/src/test/java/.*||' | sort | uniq | sed 's|./||'`; do
-  #           PROJECTS="$PROJECTS$SEP$i"
-  #           SEP=","
-  #         done
+      - name: Run unit tests
+        shell: bash
+        working-directory: ./master/keycloak      
+        run: |
+          SEP=""
+          PROJECTS=""
+          for i in `find -name '*Test.java' -type f | egrep -v './(testsuite|quarkus)/' | sed 's|/src/test/java/.*||' | sort | uniq | sed 's|./||'`; do
+            PROJECTS="$PROJECTS$SEP$i"
+            SEP=","
+          done
 
-  #         ./mvnw test -nsu -B -pl "$PROJECTS" -am
-  #     - name: Upload JVM Heapdumps
-  #       if: always()
-  #       uses: ./.github/actions/master/upload-heapdumps
-  #     - id: upload-surefire-reports
-  #       name: Upload Surefire reports
-  #       uses: ./.github/actions/master/upload-surefire-reports
-  #       if: always()
-  #       with:
-  #         api-key: ${{ secrets.FORESIGHT_API_KEY }}
-  #         surefire-reports-path: '**/target/surefire-reports/*.xml'
-  # base-integration-tests:
-  #   name: Base IT
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 100
-  #   strategy:
-  #     matrix:
-  #       group: [1, 2, 3, 4, 5, 6]
-  #     fail-fast: false
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - id: integration-test-setup
-  #       name: Integration test setup
-  #       uses: ./.github/actions/master/integration-test-setup
-  #       with:
-  #         github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
+          ./mvnw test -nsu -B -pl "$PROJECTS" -am
+      - name: Upload JVM Heapdumps
+        if: always()
+        uses: ./.github/actions/master/upload-heapdumps
+      - id: upload-surefire-reports
+        name: Upload Surefire reports
+        uses: ./.github/actions/master/upload-surefire-reports
+        if: always()
+        with:
+          api-key: ${{ secrets.FORESIGHT_API_KEY }}
+          surefire-reports-path: '**/target/surefire-reports/*.xml'
+  base-integration-tests:
+    name: Base IT
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    strategy:
+      matrix:
+        group: [1, 2, 3, 4, 5, 6]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+      - id: integration-test-setup
+        name: Integration test setup
+        uses: ./.github/actions/master/integration-test-setup
+        with:
+          github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
 
-  #     - name: Run base tests
-  #       run: |
-  #         TESTS=`testsuite/integration-arquillian/tests/base/testsuites/base-suite.sh ${{ matrix.group }}`
-  #         echo "Tests: $TESTS"
-  #         ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-quarkus -Dtest=$TESTS -pl testsuite/integration-arquillian/tests/base | misc/log/trimmer.sh
-  #     - name: Upload JVM Heapdumps
-  #       if: always()
-  #       uses: ./.github/actions/master/upload-heapdumps
-  #     - id: upload-surefire-reports
-  #       name: Upload Surefire reports
-  #       uses: ./.github/actions/master/upload-surefire-reports
-  #       if: always()
-  #       with:
-  #         api-key: ${{ secrets.FORESIGHT_API_KEY }}
-  #         surefire-reports-path: 'testsuite/integration-arquillian/tests/base/target/surefire-reports/*.xml'
-  #     - uses: ./.github/actions/master/upload-flaky-tests
-  #       name: Upload flaky tests
-  #       env:
-  #         GH_TOKEN: ${{ github.token }}
-  #       with:
-  #         job-name: Base IT
-  # quarkus-integration-tests:
-  #   name: Quarkus IT
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 115
-  #   strategy:
-  #     matrix:
-  #       server: [zip, container, storage]
-  #     fail-fast: false
-  #   env:
-  #     MAVEN_OPTS: -Xmx1024m
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - id: unit-test-setup
-  #       name: Unit test setup
-  #       uses: ./.github/actions/master/unit-test-setup
-  #       with:
-  #         github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
+      - name: Run base tests
+        run: |
+          TESTS=`testsuite/integration-arquillian/tests/base/testsuites/base-suite.sh ${{ matrix.group }}`
+          echo "Tests: $TESTS"
+          ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-quarkus -Dtest=$TESTS -pl testsuite/integration-arquillian/tests/base | misc/log/trimmer.sh
+      - name: Upload JVM Heapdumps
+        if: always()
+        uses: ./.github/actions/master/upload-heapdumps
+      - id: upload-surefire-reports
+        name: Upload Surefire reports
+        uses: ./.github/actions/master/upload-surefire-reports
+        if: always()
+        with:
+          api-key: ${{ secrets.FORESIGHT_API_KEY }}
+          surefire-reports-path: 'testsuite/integration-arquillian/tests/base/target/surefire-reports/*.xml'
+      - uses: ./.github/actions/master/upload-flaky-tests
+        name: Upload flaky tests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          job-name: Base IT
+  quarkus-integration-tests:
+    name: Quarkus IT
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 115
+    strategy:
+      matrix:
+        server: [zip, container, storage]
+      fail-fast: false
+    env:
+      MAVEN_OPTS: -Xmx1024m
+    steps:
+      - uses: actions/checkout@v3
+      - id: unit-test-setup
+        name: Unit test setup
+        uses: ./.github/actions/master/unit-test-setup
+        with:
+          github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
 
-  #     # Not sure why, but needs to re-build otherwise there's some failures starting up
-  #     - name: Run Quarkus integration Tests
-  #       run: |
-  #         declare -A PARAMS
-  #         PARAMS["zip"]=""
-  #         PARAMS["container"]="-Dkc.quarkus.tests.dist=docker"
-  #         PARAMS["storage"]="-Ptest-database -Dtest=PostgreSQLDistTest,MariaDBDistTest#testSuccessful,MySQLDistTest#testSuccessful,DatabaseOptionsDistTest,JPAStoreDistTest,HotRodStoreDistTest,MixedStoreDistTest"
+      # Not sure why, but needs to re-build otherwise there's some failures starting up
+      - name: Run Quarkus integration Tests
+        run: |
+          declare -A PARAMS
+          PARAMS["zip"]=""
+          PARAMS["container"]="-Dkc.quarkus.tests.dist=docker"
+          PARAMS["storage"]="-Ptest-database -Dtest=PostgreSQLDistTest,MariaDBDistTest#testSuccessful,MySQLDistTest#testSuccessful,DatabaseOptionsDistTest,JPAStoreDistTest,HotRodStoreDistTest,MixedStoreDistTest"
 
-  #         ./mvnw install -nsu -B -pl quarkus/tests/integration -am -DskipTests
-  #         ./mvnw test -nsu -B -pl quarkus/tests/integration ${PARAMS["${{ matrix.server }}"]} | misc/log/trimmer.sh
-  #     - name: Upload JVM Heapdumps
-  #       if: always()
-  #       uses: ./.github/actions/master/upload-heapdumps
-  #     - id: upload-surefire-reports
-  #       name: Upload Surefire reports
-  #       uses: ./.github/actions/master/upload-surefire-reports
-  #       if: always()
-  #       with:
-  #         api-key: ${{ secrets.FORESIGHT_API_KEY }}
-  #         surefire-reports-path: 'quarkus/tests/integration/target/surefire-reports/*.xml'
-  # jdk-integration-tests:
-  #   name: Java Distribution IT
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 100
-  #   strategy:
-  #     matrix:
-  #       dist: [temurin]
-  #       version: [11, 19]
-  #     fail-fast: false
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - id: integration-test-setup
-  #       name: Integration test setup
-  #       uses: ./.github/actions/master/integration-test-setup
-  #       with:
-  #         jdk-dist: ${{ matrix.dist }}
-  #         jdk-version: ${{ matrix.version }}
-  #         github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}          
-  #     - name: Prepare Quarkus distribution with current JDK
-  #       run: ./mvnw install -nsu -B -e -pl testsuite/integration-arquillian/servers/auth-server/quarkus
-  #     - name: Run base tests
-  #       run: |
-  #         TESTS=`testsuite/integration-arquillian/tests/base/testsuites/suite.sh jdk`
-  #         echo "Tests: $TESTS"
-  #         ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-quarkus -Dtest=$TESTS -pl testsuite/integration-arquillian/tests/base | misc/log/trimmer.sh
-  #     - name: Build with JDK
-  #       run: ./mvnw install -nsu -B -e -DskipTests -DskipExamples
-  #     - name: Upload JVM Heapdumps
-  #       if: always()
-  #       uses: ./.github/actions/master/upload-heapdumps
-  #     - id: upload-surefire-reports
-  #       name: Upload Surefire reports
-  #       uses: ./.github/actions/master/upload-surefire-reports
-  #       if: always()
-  #       with:
-  #         api-key: ${{ secrets.FORESIGHT_API_KEY }}
-  #         surefire-reports-path: 'testsuite/integration-arquillian/tests/base/target/surefire-reports/*.xml'
-  #     - uses: ./.github/actions/master/upload-flaky-tests
-  #       name: Upload flaky tests
-  #       env:
-  #         GH_TOKEN: ${{ github.token }}
-  #       with:
-  #         job-name: Java Distribution IT
+          ./mvnw install -nsu -B -pl quarkus/tests/integration -am -DskipTests
+          ./mvnw test -nsu -B -pl quarkus/tests/integration ${PARAMS["${{ matrix.server }}"]} | misc/log/trimmer.sh
+      - name: Upload JVM Heapdumps
+        if: always()
+        uses: ./.github/actions/master/upload-heapdumps
+      - id: upload-surefire-reports
+        name: Upload Surefire reports
+        uses: ./.github/actions/master/upload-surefire-reports
+        if: always()
+        with:
+          api-key: ${{ secrets.FORESIGHT_API_KEY }}
+          surefire-reports-path: 'quarkus/tests/integration/target/surefire-reports/*.xml'
+  jdk-integration-tests:
+    name: Java Distribution IT
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    strategy:
+      matrix:
+        dist: [temurin]
+        version: [11, 19]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+      - id: integration-test-setup
+        name: Integration test setup
+        uses: ./.github/actions/master/integration-test-setup
+        with:
+          jdk-dist: ${{ matrix.dist }}
+          jdk-version: ${{ matrix.version }}
+          github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}          
+      - name: Prepare Quarkus distribution with current JDK
+        run: ./mvnw install -nsu -B -e -pl testsuite/integration-arquillian/servers/auth-server/quarkus
+      - name: Run base tests
+        run: |
+          TESTS=`testsuite/integration-arquillian/tests/base/testsuites/suite.sh jdk`
+          echo "Tests: $TESTS"
+          ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-quarkus -Dtest=$TESTS -pl testsuite/integration-arquillian/tests/base | misc/log/trimmer.sh
+      - name: Build with JDK
+        run: ./mvnw install -nsu -B -e -DskipTests -DskipExamples
+      - name: Upload JVM Heapdumps
+        if: always()
+        uses: ./.github/actions/master/upload-heapdumps
+      - id: upload-surefire-reports
+        name: Upload Surefire reports
+        uses: ./.github/actions/master/upload-surefire-reports
+        if: always()
+        with:
+          api-key: ${{ secrets.FORESIGHT_API_KEY }}
+          surefire-reports-path: 'testsuite/integration-arquillian/tests/base/target/surefire-reports/*.xml'
+      - uses: ./.github/actions/master/upload-flaky-tests
+        name: Upload flaky tests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          job-name: Java Distribution IT
   databases-new-store:
     name: Databases New Store
     runs-on: ubuntu-latest
