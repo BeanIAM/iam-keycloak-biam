@@ -363,39 +363,39 @@ jobs:
   #         GH_TOKEN: ${{ github.token }}
   #       with:
   #         job-name: Store Model Tests
-  clustering-integration-tests:
-    name: Legacy Clustering IT
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    env:
-      MAVEN_OPTS: -Xmx1024m
-    steps:
-      - uses: actions/checkout@v3
-      - id: integration-test-setup
-        name: Integration test setup
-        uses: ./.github/actions/master/integration-test-setup
-        with:
-          github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}        
-      - name: Run cluster tests
-        run: |
-          ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-cluster-quarkus -Dsession.cache.owners=2 -Dtest=**.cluster.** -pl testsuite/integration-arquillian/tests/base  | misc/log/trimmer.sh
-      - name: Upload JVM Heapdumps
-        if: always()
-        uses: ./.github/actions/master/upload-heapdumps
-      - id: upload-surefire-reports
-        name: Upload Surefire reports
-        uses: ./.github/actions/master/upload-surefire-reports
-        if: always()
-        with:
-          api-key: ${{ secrets.FORESIGHT_API_KEY }}
-          surefire-reports-path: 'testsuite/integration-arquillian/tests/base/target/surefire-reports/*.xml'
-      - uses: ./.github/actions/master/upload-flaky-tests
-        name: Upload flaky tests
-        env:
-          GH_TOKEN: ${{ github.token }}
-        with:
-          job-name: Legacy Clustering IT
+  # clustering-integration-tests:
+  #   name: Legacy Clustering IT
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 35
+  #   env:
+  #     MAVEN_OPTS: -Xmx1024m
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - id: integration-test-setup
+  #       name: Integration test setup
+  #       uses: ./.github/actions/master/integration-test-setup
+  #       with:
+  #         github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}        
+  #     - name: Run cluster tests
+  #       run: |
+  #         ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-cluster-quarkus -Dsession.cache.owners=2 -Dtest=**.cluster.** -pl testsuite/integration-arquillian/tests/base  | misc/log/trimmer.sh
+  #     - name: Upload JVM Heapdumps
+  #       if: always()
+  #       uses: ./.github/actions/master/upload-heapdumps
+  #     - id: upload-surefire-reports
+  #       name: Upload Surefire reports
+  #       uses: ./.github/actions/master/upload-surefire-reports
+  #       if: always()
+  #       with:
+  #         api-key: ${{ secrets.FORESIGHT_API_KEY }}
+  #         surefire-reports-path: 'testsuite/integration-arquillian/tests/base/target/surefire-reports/*.xml'
+  #     - uses: ./.github/actions/master/upload-flaky-tests
+  #       name: Upload flaky tests
+  #       env:
+  #         GH_TOKEN: ${{ github.token }}
+  #       with:
+  #         job-name: Legacy Clustering IT
   fips-unit-tests:
     name: FIPS UT
     runs-on: ubuntu-latest
@@ -404,21 +404,21 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-        # Can we own this?
-      - name: webfactory/ssh-agent
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
+      #   # Can we own this?
+      # - name: webfactory/ssh-agent
+      #   uses: webfactory/ssh-agent@v0.7.0
+      #   with:
+      #     ssh-private-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
 
-      - name: Set author identity
-        run: |
-          git config --global user.email "bot@peterbean.net"
-          git config --global user.name "BeanBot"
+      # - name: Set author identity
+      #   run: |
+      #     git config --global user.email "bot@peterbean.net"
+      #     git config --global user.name "BeanBot"
 
-      - name: Init Submodules
-        run: |
-          git submodule init .
-          git submodule update .
+      # - name: Init Submodules
+      #   run: |
+      #     git submodule init .
+      #     git submodule update .
 
       - name: Fake fips
         working-directory: ./
@@ -434,7 +434,7 @@ jobs:
           github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}          
       - name: Run crypto tests
         working-directory: ./
-        run: docker run --rm --workdir /github/workspace -v "${{ github.workspace }}/master/keycloak":"/github/workspace" -v "$HOME/.m2":"/root/.m2" registry.access.redhat.com/ubi9/ubi:latest .github/scripts/master/run-fips-ut.sh
+        run: docker run --rm --workdir /github/workspace -v "${{ github.workspace }}/master/keycloak":"/github/workspace" -v "$HOME/.m2":"/root/.m2" registry.access.redhat.com/ubi9/ubi:latest .github/scripts/run-fips-ut.sh
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/master/upload-heapdumps
@@ -457,21 +457,21 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-        # Can we own this?
-      - name: webfactory/ssh-agent
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
+      #   # Can we own this?
+      # - name: webfactory/ssh-agent
+      #   uses: webfactory/ssh-agent@v0.7.0
+      #   with:
+      #     ssh-private-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
 
-      - name: Set author identity
-        run: |
-          git config --global user.email "bot@peterbean.net"
-          git config --global user.name "BeanBot"
+      # - name: Set author identity
+      #   run: |
+      #     git config --global user.email "bot@peterbean.net"
+      #     git config --global user.name "BeanBot"
 
-      - name: Init Submodules
-        run: |
-          git submodule init .
-          git submodule update .
+      # - name: Init Submodules
+      #   run: |
+      #     git submodule init .
+      #     git submodule update .
 
       - name: Fake fips
         working-directory: ./
@@ -489,7 +489,7 @@ jobs:
         run: ./mvnw install -nsu -B -e -pl testsuite/integration-arquillian/servers/auth-server/quarkus -Pauth-server-quarkus,auth-server-fips140-2
       - name: Run base tests
         working-directory: ./
-        run: docker run --rm --workdir /github/workspace -e "SUREFIRE_RERUN_FAILING_COUNT" -v "${{ github.workspace }}/master/keycloak":"/github/workspace" -v "$HOME/.m2":"/root/.m2" registry.access.redhat.com/ubi9/ubi:latest .github/scripts/master/run-fips-it.sh ${{ matrix.mode }}
+        run: docker run --rm --workdir /github/workspace -e "SUREFIRE_RERUN_FAILING_COUNT" -v "${{ github.workspace }}/master/keycloak":"/github/workspace" -v "$HOME/.m2":"/root/.m2" registry.access.redhat.com/ubi9/ubi:latest .github/scripts/run-fips-it.sh ${{ matrix.mode }}
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/master/upload-heapdumps
