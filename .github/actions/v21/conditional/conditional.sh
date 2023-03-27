@@ -3,7 +3,7 @@
 REMOTE="$1"
 BASE_REF="$2"
 
-CONDITIONS_FILE=".github/actions/master/conditional/conditions"
+CONDITIONS_FILE=".github/actions/v21/conditional/conditions"
 
 [ "$BASE_REF" != "" ] && IS_PR=true || IS_PR=false
 [ "$GITHUB_OUTPUT" != "" ] && IS_GITHUB_ACTIONS=true || IS_GITHUB_ACTIONS=false
