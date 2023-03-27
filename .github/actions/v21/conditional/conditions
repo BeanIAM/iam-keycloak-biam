@@ -1,0 +1,19 @@
+# File patterns used to decide what workflows/jobs to execute for a given PR
+#
+# To test a pattern run '.github/actions/master/conditional/conditional.sh <remote name> <branch>'
+
+.github/actions/master/                            ci operator js codeql-java codeql-themes
+
+.github/workflows/master-ci.yml                    ci
+.github/workflows/master-operator-ci.yml           operator
+.github/workflows/master-js-ci.yml                 js
+.github/workflows/master-codeql-analysis.yml       codeql-java codeql-themes
+
+*/src/main/                                 ci operator
+*/src/test/                                 ci operator
+master/keycloak/pom.xml                                     ci operator
+
+master/keycloak/js/                                         js
+
+*.java                                      codeql-java
+master/keycloak/themes/                                     codeql-themes

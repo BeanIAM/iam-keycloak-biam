@@ -1,0 +1,48 @@
+name: Setup unit test
+description: Download Maven caches needed for unit tests
+
+inputs:
+  jdk-dist:
+    description: JDK distribution
+    required: false
+    default: temurin
+  jdk-version:
+    description: JDK version
+    required: false
+    default: 17
+  github-ssh-key:
+    description: GitHub SSH Key from Org secret
+
+runs:
+  using: composite
+  steps:
+    - id: setup-java
+      name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: ${{ inputs.jdk-dist }}
+        java-version: ${{ inputs.jdk-version }}
+
+      # Can we own this?
+    - name: webfactory/ssh-agent
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ inputs.github-ssh-key }}
+
+    - name: Set author identity
+      shell: bash
+      working-directory: ./master/keycloak
+      run: |
+        git config --global user.email "bot@peterbean.net"
+        git config --global user.name "BeanBot"
+
+    - name: Init Submodules
+      shell: bash
+      working-directory: ./master/keycloak    
+      run: |
+        git submodule init .
+        git submodule update .
+
+    - id: maven-cache
+      name: Maven cache
+      uses: ./.github/actions/master/maven-cache
