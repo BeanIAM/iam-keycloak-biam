@@ -48,18 +48,18 @@ runs:
 
     - id: maven-cache
       name: Maven cache
-      uses: ./.github/actions/master/maven-cache
+      uses: ./.github/actions/v21/maven-cache
 
     - id: phantomjs-cache
       name: PhantomJS cache
-      uses: ./.github/actions/master/phantomjs-cache
+      uses: ./.github/actions/v21/phantomjs-cache
 
     - id: download-keycloak
       name: Download Keycloak Maven artifacts
       uses: actions/download-artifact@v3
       with:
         name: m2-keycloak.tzts
-        path: master/keycloak
+        path: releases/v21/latest/keycloak
 
     - id: extract-maven-artifacts
       name: Extract Keycloak Maven artifacts

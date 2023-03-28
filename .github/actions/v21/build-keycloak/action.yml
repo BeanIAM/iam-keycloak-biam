@@ -94,7 +94,7 @@ runs:
       uses: actions/upload-artifact@v3
       with:
         name: m2-keycloak.tzts
-        path: releases/v21/keycloak/m2-keycloak.tzts
+        path: releases/v21/latest/keycloak/m2-keycloak.tzts
         retention-days: 1
 
     - id: upload-keycloak-dist
@@ -103,5 +103,5 @@ runs:
       uses: actions/upload-artifact@v3
       with:
         name: keycloak-dist
-        path: releases/v21/keycloak/quarkus/dist/target/keycloak*.tar.gz
+        path: releases/v21/latest/keycloak/quarkus/dist/target/keycloak*.tar.gz
         retention-days: 1

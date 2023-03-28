@@ -25,7 +25,7 @@ outputs:
 defaults:
   run:
     shell: bash
-    working-directory: ./release/v21/keycloak
+    working-directory: ./release/v21/latest/keycloak
 
 runs:
   using: composite

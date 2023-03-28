@@ -45,7 +45,7 @@ runs:
     - name: Cache Maven Wrapper
       uses: actions/cache@v3
       with:
-        path: master/keycloak/.mvn/wrapper/maven-wrapper.jar
+        path: releases/v21/latest/keycloak/.mvn/wrapper/maven-wrapper.jar
         key: ${{ runner.os }}-maven-wrapper-${{ hashFiles('**/maven-wrapper.properties') }}
         # use a previously cached JAR file as something else besides the version could have changed in the file
         restore-keys: |
