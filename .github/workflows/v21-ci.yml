@@ -4,7 +4,7 @@ on:
     - cron: 0 20,23,2,5 * * *
   push:
     paths: 
-       - './releases/v21/**'
+       - './releases/v21/latest**'
        - '.github/workflows/v21-*.yml'
        - '.github/actions/v21/**'
     branches-ignore:
@@ -41,7 +41,7 @@ concurrency:
 defaults:
   run:
     shell: bash
-    working-directory: ./releases/v21/keycloak
+    working-directory: ./releases/v21/latest/keycloak
 jobs:
   conditional:
     name: Check conditional workflows and jobs
@@ -85,7 +85,7 @@ jobs:
 
   #     - name: Set author identity
   #       shell: bash
-  #       working-directory: ./releases/v21/keycloak
+  #       working-directory: ./releases/v21/latest/keycloak
   #       run: |
   #         git config --global user.email "bot@peterbean.net"
   #         git config --global user.name "BeanBot"

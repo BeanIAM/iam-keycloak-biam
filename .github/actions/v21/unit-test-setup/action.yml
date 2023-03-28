@@ -31,14 +31,14 @@ runs:
 
     - name: Set author identity
       shell: bash
-      working-directory: ./master/keycloak
+      working-directory: ./releases/v21/latest/keycloak
       run: |
         git config --global user.email "bot@peterbean.net"
         git config --global user.name "BeanBot"
 
     - name: Init Submodules
       shell: bash
-      working-directory: ./master/keycloak    
+      working-directory: ./releases/v21/latest/keycloak    
       run: |
         git submodule init .
         git submodule update .

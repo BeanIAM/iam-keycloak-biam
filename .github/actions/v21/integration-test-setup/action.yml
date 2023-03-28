@@ -32,14 +32,14 @@ runs:
 
     - name: Set author identity
       shell: bash
-      working-directory: ./master/keycloak
+      working-directory: ./releases/v21/latest/keycloak
       run: |
         git config --global user.email "bot@peterbean.net"
         git config --global user.name "BeanBot"
 
     - name: Init Submodules
       shell: bash
-      working-directory: ./master/keycloak
+      working-directory: ./releases/v21/latest/keycloak
       run: |
         git fetch
         git submodule init .
@@ -64,5 +64,5 @@ runs:
     - id: extract-maven-artifacts
       name: Extract Keycloak Maven artifacts
       shell: bash
-      working-directory: ./master/keycloak
+      working-directory: ./releases/v21/latest/keycloak
       run: tar -C ~/ --use-compress-program unzstd -xf m2-keycloak.tzts

@@ -15,7 +15,7 @@ runs:
     - id: weekly-cache-key
       name: Key for weekly rotation of cache
       shell: bash
-      working-directory: ./master/keycloak
+      working-directory: ./releases/v21/latest/keycloak
       run: echo "key=mvn-`date -u "+%Y-%U"`" >> $GITHUB_OUTPUT
 
     - id: cache-maven-repository
