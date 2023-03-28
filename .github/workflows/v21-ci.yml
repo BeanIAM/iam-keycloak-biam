@@ -177,7 +177,7 @@ jobs:
         with:
           github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
 
-      # Not sure why, but needs to re-build otherwise there's some failures starting up 
+      # Not sure why, but needs to re-build otherwise there's some failures starting up
       - name: Run Quarkus integration Tests
         run: |
           declare -A PARAMS
@@ -417,7 +417,7 @@ jobs:
           github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}          
       - name: Run crypto tests
         working-directory: ./
-        run: docker run --rm --workdir /github/workspace -v "${{ github.workspace }}/v21/latest/keycloak":"/github/workspace" -v "$HOME/.m2":"/root/.m2" registry.access.redhat.com/ubi9/ubi:latest .github/scripts/run-fips-ut.sh
+        run: docker run --rm --workdir /github/workspace -v "${{ github.workspace }}/releases/v21/latest/keycloak":"/github/workspace" -v "$HOME/.m2":"/root/.m2" registry.access.redhat.com/ubi9/ubi:latest .github/scripts/run-fips-ut.sh
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/v21/upload-heapdumps
@@ -455,7 +455,7 @@ jobs:
         run: ./mvnw install -nsu -B -e -pl testsuite/integration-arquillian/servers/auth-server/quarkus -Pauth-server-quarkus,auth-server-fips140-2
       - name: Run base tests
         working-directory: ./
-        run: docker run --rm --workdir /github/workspace -e "SUREFIRE_RERUN_FAILING_COUNT" -v "${{ github.workspace }}/v21/latest/keycloak":"/github/workspace" -v "$HOME/.m2":"/root/.m2" registry.access.redhat.com/ubi9/ubi:latest .github/scripts/run-fips-it.sh ${{ matrix.mode }}
+        run: docker run --rm --workdir /github/workspace -e "SUREFIRE_RERUN_FAILING_COUNT" -v "${{ github.workspace }}/releases/v21/latest/keycloak":"/github/workspace" -v "$HOME/.m2":"/root/.m2" registry.access.redhat.com/ubi9/ubi:latest .github/scripts/run-fips-it.sh ${{ matrix.mode }}
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/v21/upload-heapdumps
