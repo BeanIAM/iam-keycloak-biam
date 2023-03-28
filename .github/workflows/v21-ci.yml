@@ -177,7 +177,7 @@ jobs:
         with:
           github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
 
-      # Not sure why, but needs to re-build otherwise there's some failures starting up
+      # Not sure why, but needs to re-build otherwise there's some failures starting up 
       - name: Run Quarkus integration Tests
         run: |
           declare -A PARAMS
