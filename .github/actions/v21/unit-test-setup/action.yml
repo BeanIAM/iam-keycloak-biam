@@ -45,4 +45,4 @@ runs:
 
     - id: maven-cache
       name: Maven cache
-      uses: ./.github/actions/master/maven-cache
+      uses: ./.github/actions/v21/maven-cache

@@ -64,62 +64,62 @@ jobs:
         uses: ./.github/actions/v21/build-keycloak
         with:
           github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
-  # unit-tests:
-  #   name: Base UT
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   timeout-minutes: 30
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - id: unit-test-setup
-  #       name: Unit test setup
-  #       uses: ./.github/actions/v21/unit-test-setup
-  #       with:
-  #         github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
+  unit-tests:
+    name: Base UT
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v3
+      - id: unit-test-setup
+        name: Unit test setup
+        uses: ./.github/actions/v21/unit-test-setup
+        with:
+          github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
       
-  #       # Can we own this?
-  #     - name: webfactory/ssh-agent
-  #       uses: webfactory/ssh-agent@v0.7.0
-  #       with:
-  #         ssh-private-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
+        # Can we own this?
+      - name: webfactory/ssh-agent
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
 
-  #     - name: Set author identity
-  #       shell: bash
-  #       working-directory: ./releases/v21/latest/keycloak
-  #       run: |
-  #         git config --global user.email "bot@peterbean.net"
-  #         git config --global user.name "BeanBot"
+      - name: Set author identity
+        shell: bash
+        working-directory: ./releases/v21/latest/keycloak
+        run: |
+          git config --global user.email "bot@peterbean.net"
+          git config --global user.name "BeanBot"
 
-  #     - name: Init Submodules
-  #       shell: bash
-  #       working-directory: .releases/v21/keycloak
-  #       run: |
-  #         git fetch
-  #         git submodule init .
-  #         git submodule update .
+      - name: Init Submodules
+        shell: bash
+        working-directory: ./releases/v21/keycloak
+        run: |
+          git fetch
+          git submodule init .
+          git submodule update .
 
-  #     - name: Run unit tests
-  #       shell: bash
-  #       working-directory: .release/v21/keycloak      
-  #       run: |
-  #         SEP=""
-  #         PROJECTS=""
-  #         for i in `find -name '*Test.java' -type f | egrep -v './(testsuite|quarkus|docs)/' | sed 's|/src/test/java/.*||' | sort | uniq | sed 's|./||'`; do
-  #           PROJECTS="$PROJECTS$SEP$i"
-  #           SEP=","
-  #         done
+      - name: Run unit tests
+        shell: bash
+        working-directory: ./releases/v21/latest/keycloak      
+        run: |
+          SEP=""
+          PROJECTS=""
+          for i in `find -name '*Test.java' -type f | egrep -v './(testsuite|quarkus|docs)/' | sed 's|/src/test/java/.*||' | sort | uniq | sed 's|./||'`; do
+            PROJECTS="$PROJECTS$SEP$i"
+            SEP=","
+          done
 
-  #         ./mvnw test -nsu -B -pl "$PROJECTS" -am
-  #     - name: Upload JVM Heapdumps
-  #       if: always()
-  #       uses: ./.github/actions/v21/upload-heapdumps
-  #     - id: upload-surefire-reports
-  #       name: Upload Surefire reports
-  #       uses: ./.github/actions/v21/upload-surefire-reports
-  #       if: always()
-  #       with:
-  #         api-key: ${{ secrets.FORESIGHT_API_KEY }}
-  #         surefire-reports-path: '**/target/surefire-reports/*.xml'
+          ./mvnw test -nsu -B -pl "$PROJECTS" -am
+      - name: Upload JVM Heapdumps
+        if: always()
+        uses: ./.github/actions/v21/upload-heapdumps
+      - id: upload-surefire-reports
+        name: Upload Surefire reports
+        uses: ./.github/actions/v21/upload-surefire-reports
+        if: always()
+        with:
+          api-key: ${{ secrets.FORESIGHT_API_KEY }}
+          surefire-reports-path: '**/target/surefire-reports/*.xml'
   # base-integration-tests:
   #   name: Base IT
   #   needs: build
