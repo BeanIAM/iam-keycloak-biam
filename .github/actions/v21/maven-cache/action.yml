@@ -41,7 +41,7 @@ runs:
           ~/.m2/repository/*/*
           !~/.m2/repository/org/keycloak
         key: ${{ steps.weekly-cache-key.outputs.key }}
-        
+
     - name: Cache Maven Wrapper
       uses: actions/cache@v3
       with:

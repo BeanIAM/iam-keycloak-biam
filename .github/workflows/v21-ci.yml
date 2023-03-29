@@ -1,7 +1,6 @@
 name: Keycloak CI
+
 on:
-  schedule:
-    - cron: 0 20,23,2,5 * * *
   push:
     paths: 
        - './releases/v21/latest**'
@@ -10,39 +9,27 @@ on:
     branches-ignore:
       - master
       - dependabot/**
-  # pull_request: ~
-    # branches-ignore: # to ignore
-    #   - '*' # matches every branch that doesn't contain a '/'
-    #   - '*/*' # matches every branch containing a single '/'
-    #   - '**' # matches every branch
+  pull_request:
+  schedule:
+    - cron: 0 20,23,2,5 * * *
   workflow_dispatch:
-  workflow_call: ~
-  # inputs:
-  #     config-path:
-  #         required: true
-  #         type: string
-  # secrets:
-  #     envPAT:
-  #         required: true
-  # create:
-  #   branches-ignore:
-  #     - '*' # matches every branch that doesn't contain a '/'
-  #     - '*/*' # matches every branch containing a single '/'
-  #     - '**' # matches every branch
-  #     - '!github-action-runs/v21' # excludes feature/cicd-16/schedule_github_action
+
 env:
   DEFAULT_JDK_VERSION: 17
   DEFAULT_JDK_DIST: temurin
   SUREFIRE_RERUN_FAILING_COUNT: 2
+
 concurrency:
   # Only cancel jobs for PR updates
   group: ci-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
+
 defaults:
   run:
     shell: bash
     working-directory: ./releases/v21/latest/keycloak
 jobs:
+
   conditional:
     name: Check conditional workflows and jobs
     if: github.event_name != 'schedule' || github.repository == 'keycloak/keycloak'
@@ -51,6 +38,7 @@ jobs:
       ci: ${{ steps.conditional.outputs.ci }}
     steps:
       - uses: actions/checkout@v3
+
       - id: conditional
         uses: ./.github/actions/v21/conditional
   build:
@@ -60,6 +48,7 @@ jobs:
     needs: conditional
     steps:
       - uses: actions/checkout@v3
+
       - name: Build Keycloak
         uses: ./.github/actions/v21/build-keycloak
         with:
@@ -71,6 +60,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
+
       - id: unit-test-setup
         name: Unit test setup
         uses: ./.github/actions/v21/unit-test-setup
@@ -110,6 +100,7 @@ jobs:
           done
 
           ./mvnw test -nsu -B -pl "$PROJECTS" -am
+
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/v21/upload-heapdumps
@@ -120,6 +111,7 @@ jobs:
         with:
           api-key: ${{ secrets.FORESIGHT_API_KEY }}
           surefire-reports-path: '**/target/surefire-reports/*.xml'
+
   base-integration-tests:
     name: Base IT
     needs: build
@@ -131,6 +123,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
+
       - id: integration-test-setup
         name: Integration test setup
         uses: ./.github/actions/v21/integration-test-setup
@@ -142,6 +135,7 @@ jobs:
           TESTS=`testsuite/integration-arquillian/tests/base/testsuites/base-suite.sh ${{ matrix.group }}`
           echo "Tests: $TESTS"
           ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-quarkus -Dtest=$TESTS -pl testsuite/integration-arquillian/tests/base | misc/log/trimmer.sh
+
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/v21/upload-heapdumps
@@ -158,6 +152,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         with:
           job-name: Base IT
+
   quarkus-integration-tests:
     name: Quarkus IT
     needs: build
@@ -171,6 +166,7 @@ jobs:
       MAVEN_OPTS: -Xmx1024m
     steps:
       - uses: actions/checkout@v3
+
       - id: unit-test-setup
         name: Unit test setup
         uses: ./.github/actions/v21/unit-test-setup
@@ -187,6 +183,7 @@ jobs:
 
           ./mvnw install -nsu -B -pl quarkus/tests/integration -am -DskipTests
           ./mvnw test -nsu -B -pl quarkus/tests/integration ${PARAMS["${{ matrix.server }}"]} | misc/log/trimmer.sh
+
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/v21/upload-heapdumps
@@ -197,6 +194,7 @@ jobs:
         with:
           api-key: ${{ secrets.FORESIGHT_API_KEY }}
           surefire-reports-path: 'quarkus/tests/integration/target/surefire-reports/*.xml'
+
   jdk-integration-tests:
     name: Java Distribution IT
     needs: build
@@ -209,6 +207,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
+
       - id: integration-test-setup
         name: Integration test setup
         uses: ./.github/actions/v21/integration-test-setup
@@ -218,13 +217,17 @@ jobs:
           github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}          
       - name: Prepare Quarkus distribution with current JDK
         run: ./mvnw install -nsu -B -e -pl testsuite/integration-arquillian/servers/auth-server/quarkus
+
       - name: Run base tests
         run: |
           TESTS=`testsuite/integration-arquillian/tests/base/testsuites/suite.sh jdk`
           echo "Tests: $TESTS"
           ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-quarkus -Dtest=$TESTS -pl testsuite/integration-arquillian/tests/base | misc/log/trimmer.sh
+
       - name: Build with JDK
-        run: ./mvnw install -nsu -B -e -DskipTests -DskipExamples
+        run:
+          ./mvnw install -nsu -B -e -DskipTests -DskipExamples
+
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/v21/upload-heapdumps
@@ -241,6 +244,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         with:
           job-name: Java Distribution IT
+
   databases-new-store:
     name: Databases New Store
     runs-on: ubuntu-latest
@@ -259,6 +263,7 @@ jobs:
           fi
     outputs:
       db: ${{ steps.matrix-db.outputs.db }}
+
   new-store-integration-tests:
     name: New Store IT
     needs: [build, databases-new-store]
@@ -271,6 +276,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
+
       - id: integration-test-setup
         name: Integration test setup
         uses: ./.github/actions/v21/integration-test-setup
@@ -287,6 +293,7 @@ jobs:
           TESTS=`testsuite/integration-arquillian/tests/base/testsuites/suite.sh database`
           echo "Tests: $TESTS"
           ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-quarkus ${PARAMS["${{ matrix.db }}"]} -Dtest=$TESTS -pl testsuite/integration-arquillian/tests/base | misc/log/trimmer.sh
+
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/v21/upload-heapdumps
@@ -303,6 +310,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         with:
           job-name: New Store IT
+
   legacy-store-integration-tests:
     name: Legacy Store IT
     needs: build
@@ -314,6 +322,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
+
       - id: integration-test-setup
         name: Integration test setup
         uses: ./.github/actions/v21/integration-test-setup
@@ -324,6 +333,7 @@ jobs:
           TESTS=`testsuite/integration-arquillian/tests/base/testsuites/suite.sh database`
           echo "Tests: $TESTS"
           ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-quarkus -Pdb-${{ matrix.db }} -Dtest=$TESTS -pl testsuite/integration-arquillian/tests/base | misc/log/trimmer.sh
+
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/v21/upload-heapdumps
@@ -340,6 +350,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         with:
           job-name: Legacy Store IT
+
   store-model-tests:
     name: Store Model Tests
     runs-on: ubuntu-latest
@@ -347,6 +358,7 @@ jobs:
     timeout-minutes: 75
     steps:
       - uses: actions/checkout@v3
+
       - id: integration-test-setup
         name: Integration test setup
         uses: ./.github/actions/v21/integration-test-setup
@@ -354,6 +366,7 @@ jobs:
           github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
       - name: Run model tests
         run: testsuite/model/test-all-profiles.sh -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }}
+
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/v21/upload-heapdumps
@@ -363,6 +376,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         with:
           job-name: Store Model Tests
+
   clustering-integration-tests:
     name: Legacy Clustering IT
     needs: build
@@ -372,6 +386,7 @@ jobs:
       MAVEN_OPTS: -Xmx1024m
     steps:
       - uses: actions/checkout@v3
+
       - id: integration-test-setup
         name: Integration test setup
         uses: ./.github/actions/v21/integration-test-setup
@@ -380,6 +395,7 @@ jobs:
       - name: Run cluster tests
         run: |
           ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-cluster-quarkus -Dsession.cache.owners=2 -Dtest=**.cluster.** -pl testsuite/integration-arquillian/tests/base  | misc/log/trimmer.sh
+
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/v21/upload-heapdumps
@@ -396,6 +412,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         with:
           job-name: Legacy Clustering IT
+
   fips-unit-tests:
     name: FIPS UT
     runs-on: ubuntu-latest
@@ -403,12 +420,14 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v3
+      
       - name: Fake fips
         working-directory: ./
         run: |
           cd .github/fake_fips/v21
           make
           sudo insmod fake_fips.ko
+
       - id: unit-test-setup
         name: Unit test setup
         uses: ./.github/actions/v21/unit-test-setup
@@ -428,6 +447,7 @@ jobs:
         with:
           api-key: ${{ secrets.FORESIGHT_API_KEY }}
           surefire-reports-path: '**/target/surefire-reports/*.xml'
+
   fips-integration-tests:
     name: FIPS IT
     needs: build
@@ -439,12 +459,14 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
+
       - name: Fake fips
         working-directory: ./
         run: |
           cd .github/fake_fips/v21
           make
           sudo insmod fake_fips.ko
+
       - id: integration-test-setup
         name: Integration test setup
         uses: ./.github/actions/v21/integration-test-setup
@@ -453,9 +475,11 @@ jobs:
           github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
       - name: Prepare Quarkus distribution with BCFIPS
         run: ./mvnw install -nsu -B -e -pl testsuite/integration-arquillian/servers/auth-server/quarkus -Pauth-server-quarkus,auth-server-fips140-2
+
       - name: Run base tests
         working-directory: ./
         run: docker run --rm --workdir /github/workspace -e "SUREFIRE_RERUN_FAILING_COUNT" -v "${{ github.workspace }}/releases/v21/latest/keycloak":"/github/workspace" -v "$HOME/.m2":"/root/.m2" registry.access.redhat.com/ubi9/ubi:latest .github/scripts/run-fips-it.sh ${{ matrix.mode }}
+
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/v21/upload-heapdumps
@@ -472,6 +496,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         with:
           job-name: FIPS IT
+
   account-console-integration-tests:
     name: Account Console IT
     runs-on: ubuntu-latest
@@ -479,26 +504,36 @@ jobs:
     timeout-minutes: 75
     strategy:
       matrix:
-        browser: [chrome]
+        browser: [firefox] # Chrome not working for now
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
+
+      - name: Setup firefox
+        uses: browser-actions/setup-firefox@latest
+        with:
+          firefox-version: latest
+      - run: firefox --version
+
       - id: integration-test-setup
         name: Integration test setup
         uses: ./.github/actions/v21/integration-test-setup
         with:
           github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
       - name: Run Account Console IT
-        run: ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-quarkus -Dtest=**.account2.**,!SigningInTest#passwordlessWebAuthnTest,!SigningInTest#twoFactorWebAuthnTest -Dbrowser=${{ matrix.browser }} "-Dwebdriver.chrome.driver=$CHROMEWEBDRIVER/chromedriver" -f testsuite/integration-arquillian/tests/other/base-ui/pom.xml | misc/log/trimmer.sh
+        run: ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-quarkus -Dtest=**.account2.**,!SigningInTest#passwordlessWebAuthnTest,!SigningInTest#twoFactorWebAuthnTest -Dbrowser=${{ matrix.browser }} -f testsuite/integration-arquillian/tests/other/base-ui/pom.xml | misc/log/trimmer.sh
+
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/v21/upload-heapdumps
+
       - uses: ./.github/actions/v21/upload-flaky-tests
         name: Upload flaky tests
         env:
           GH_TOKEN: ${{ github.token }}
         with:
           job-name: Account Console IT
+
   webauthn-integration-tests:
     name: WebAuthn IT
     runs-on: ubuntu-latest
@@ -510,6 +545,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
+
       - id: integration-test-setup
         name: Integration test setup
         uses: ./.github/actions/v21/integration-test-setup
@@ -517,6 +553,7 @@ jobs:
           github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
       - name: Run WebAuthn IT
         run: ./mvnw test -Dsurefire.rerunFailingTestsCount=${{ env.SUREFIRE_RERUN_FAILING_COUNT }} -nsu -B -Pauth-server-quarkus -Dtest=org.keycloak.testsuite.webauthn.**.*Test -Dbrowser=${{ matrix.browser }} "-Dwebdriver.chrome.driver=$CHROMEWEBDRIVER/chromedriver" -Pwebauthn -f testsuite/integration-arquillian/tests/other/pom.xml | misc/log/trimmer.sh
+
       - name: Upload JVM Heapdumps
         if: always()
         uses: ./.github/actions/v21/upload-heapdumps
@@ -526,6 +563,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         with:
           job-name: WebAuthn IT
+
+
   check-set-status:
     name: Set check conclusion
     needs:
@@ -544,8 +583,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       conclusion: ${{ steps.check.outputs.conclusion }}
+
     steps:
       - uses: actions/checkout@v3
+
       - id: check
         uses: ./.github/actions/v21/checks-success
   check:
@@ -555,11 +596,12 @@ jobs:
       - conditional
       - check-set-status
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
+
       - name: Check status
         uses: ./.github/actions/v21/checks-job-pass
         with:
           required: ${{ needs.conditional.outputs.ci }}
           conclusion: ${{ needs.check-set-status.outputs.conclusion }}
-

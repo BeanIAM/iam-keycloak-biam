@@ -2,16 +2,20 @@
 #
 # To test a pattern run '.github/actions/v21/conditional/conditional.sh <remote name> <branch>'
 
-.github/actions/v21/                            ci operator js codeql-java codeql-themes
+.github/actions/v21/                            ci operator js codeql-java codeql-themes guides documentation
 
 .github/workflows/v21-ci.yml                    ci
 .github/workflows/v21-operator-ci.yml           operator
 .github/workflows/v21-js-ci.yml                 js
 .github/workflows/v21-codeql-analysis.yml       codeql-java codeql-themes
+.github/workflows/guides.yml                guides
+.github/workflows/documentation.yml         documentation
 
 */src/main/                                 ci operator
 */src/test/                                 ci operator
 v21/latest/keycloak/pom.xml                                     ci operator
+docs/guides/                                guides
+docs/documentation/                         documentation
 
 v21/latest/keycloak/js/                                         js
 
