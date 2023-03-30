@@ -449,53 +449,53 @@ jobs:
   #         surefire-reports-path: '**/target/surefire-reports/*.xml'
 
   # fips-integration-tests:
-  #   name: FIPS IT
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 45
-  #   strategy:
-  #     matrix:
-  #       mode: [non-strict, strict]
-  #     fail-fast: false
-  #   steps:
-  #     - uses: actions/checkout@v3
+    # name: FIPS IT
+    # needs: build
+    # runs-on: ubuntu-latest
+    # timeout-minutes: 45
+    # strategy:
+    #   matrix:
+    #     mode: [non-strict, strict]
+    #   fail-fast: false
+    # steps:
+    #   - uses: actions/checkout@v3
 
-  #     - name: Fake fips
-  #       working-directory: ./
-  #       run: |
-  #         cd .github/fake_fips/v21
-  #         make
-  #         sudo insmod fake_fips.ko
+    #   - name: Fake fips
+    #     working-directory: ./
+    #     run: |
+    #       cd .github/fake_fips/v21
+    #       make
+    #       sudo insmod fake_fips.ko
 
-  #     - id: integration-test-setup
-  #       name: Integration test setup
-  #       uses: ./.github/actions/v21/integration-test-setup
-  #       with:
-  #         jdk-version: 17
-  #         github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
-  #     - name: Prepare Quarkus distribution with BCFIPS
-  #       run: ./mvnw install -nsu -B -e -pl testsuite/integration-arquillian/servers/auth-server/quarkus -Pauth-server-quarkus,auth-server-fips140-2
+    #   - id: integration-test-setup
+    #     name: Integration test setup
+    #     uses: ./.github/actions/v21/integration-test-setup
+    #     with:
+    #       jdk-version: 17
+    #       github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
+    #   - name: Prepare Quarkus distribution with BCFIPS
+    #     run: ./mvnw install -nsu -B -e -pl testsuite/integration-arquillian/servers/auth-server/quarkus -Pauth-server-quarkus,auth-server-fips140-2
 
-  #     - name: Run base tests
-  #       working-directory: ./
-  #       run: docker run --rm --workdir /github/workspace -e "SUREFIRE_RERUN_FAILING_COUNT" -v "${{ github.workspace }}/releases/v21/latest/keycloak":"/github/workspace" -v "$HOME/.m2":"/root/.m2" registry.access.redhat.com/ubi9/ubi:latest .github/scripts/run-fips-it.sh ${{ matrix.mode }}
+    #   - name: Run base tests
+    #     working-directory: ./
+    #     run: docker run --rm --workdir /github/workspace -e "SUREFIRE_RERUN_FAILING_COUNT" -v "${{ github.workspace }}/releases/v21/latest/keycloak":"/github/workspace" -v "$HOME/.m2":"/root/.m2" registry.access.redhat.com/ubi9/ubi:latest .github/scripts/run-fips-it.sh ${{ matrix.mode }}
 
-  #     - name: Upload JVM Heapdumps
-  #       if: always()
-  #       uses: ./.github/actions/v21/upload-heapdumps
-  #     - id: upload-surefire-reports
-  #       name: Upload Surefire reports
-  #       uses: ./.github/actions/v21/upload-surefire-reports
-  #       if: always()
-  #       with:
-  #         api-key: ${{ secrets.FORESIGHT_API_KEY }}
-  #         surefire-reports-path: 'testsuite/integration-arquillian/tests/base/target/surefire-reports/*.xml'
-  #     - uses: ./.github/actions/v21/upload-flaky-tests
-  #       name: Upload flaky tests
-  #       env:
-  #         GH_TOKEN: ${{ github.token }}
-  #       with:
-  #         job-name: FIPS IT
+    #   - name: Upload JVM Heapdumps
+    #     if: always()
+    #     uses: ./.github/actions/v21/upload-heapdumps
+    #   - id: upload-surefire-reports
+    #     name: Upload Surefire reports
+    #     uses: ./.github/actions/v21/upload-surefire-reports
+    #     if: always()
+    #     with:
+    #       api-key: ${{ secrets.FORESIGHT_API_KEY }}
+    #       surefire-reports-path: 'testsuite/integration-arquillian/tests/base/target/surefire-reports/*.xml'
+    #   - uses: ./.github/actions/v21/upload-flaky-tests
+    #     name: Upload flaky tests
+    #     env:
+    #       GH_TOKEN: ${{ github.token }}
+    #     with:
+    #       job-name: FIPS IT
 
   account-console-integration-tests:
     name: Account Console IT
