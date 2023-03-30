@@ -73,7 +73,7 @@ runs:
       working-directory: ./releases/v21/latest/keycloak
       run: |
         MVN_HTTP_CONFIG="-Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.class=standard -Dmaven.wagon.http.retryHandler.count=3 -Dmaven.wagon.httpconnectionManager.ttlSeconds=120"
-        ./mvnw install dependency:resolve -nsu -B -e -DskipTests -DskipExamples $MVN_HTTP_CONFIG 
+        ./mvnw install -nsu -B -e -DskipTests -DskipExamples $MVN_HTTP_CONFIG 
 
     - id: compress-keycloak-maven-repository
       name: Compress Keycloak Maven artifacts
