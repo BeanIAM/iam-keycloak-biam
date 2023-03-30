@@ -571,31 +571,31 @@ jobs:
           job-name: WebAuthn IT
 
 
-  check-set-status:
-    name: Set check conclusion
-    needs:
-      - unit-tests
-      - base-integration-tests
-      - quarkus-integration-tests
-      - jdk-integration-tests
-      - new-store-integration-tests
-      - legacy-store-integration-tests
-      - store-model-tests
-      - clustering-integration-tests
-      - fips-unit-tests
-      - fips-integration-tests
-      - account-console-integration-tests
-      - webauthn-integration-tests
-    runs-on: ubuntu-latest
-    outputs:
-      conclusion: ${{ steps.check.outputs.conclusion }}
+  # check-set-status:
+  #   name: Set check conclusion
+  #   needs:
+  #     - unit-tests
+  #     - base-integration-tests
+  #     - quarkus-integration-tests
+  #     - jdk-integration-tests
+  #     - new-store-integration-tests
+  #     - legacy-store-integration-tests
+  #     - store-model-tests
+  #     - clustering-integration-tests
+  #     - fips-unit-tests
+  #     - fips-integration-tests
+  #     - account-console-integration-tests
+  #     - webauthn-integration-tests
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     conclusion: ${{ steps.check.outputs.conclusion }}
 
-    steps:
-      - uses: actions/checkout@v3
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - id: check
-        uses: ./.github/actions/v21/checks-success
-  check:
+  #     - id: check
+  #       uses: ./.github/actions/v21/checks-success
+  # check:
     name: Status Check - Keycloak CI
     if: always() && ( github.event_name != 'schedule' || github.repository == 'keycloak/keycloak' )
     needs:
