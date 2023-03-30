@@ -17,17 +17,9 @@ outputs:
   codeql-themes:
     description: Should "codeql-analysis.yml / themes" execute
     value: ${{ steps.changes.outputs.codeql-themes }}
-  guides:
-    description: Should "guides.yml" execute
-    value: ${{ steps.changes.outputs.guides }}
-  documentation:
-    description: Should "documentation.yml" execute
-    value: ${{ steps.changes.outputs.documentation }}
-# CustomBean
-defaults:
-  run:
-    shell: bash
-    working-directory: ./release/v21/latest/keycloak
+  codeql-js_adapter:
+    description: Should "codeql-analysis.yml / js-adapter" execute
+    value: ${{ steps.changes.outputs.codeql-js_adapter }}
 
 runs:
   using: composite

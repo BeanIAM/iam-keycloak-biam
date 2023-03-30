@@ -13,11 +13,11 @@
 
 */src/main/                                 ci operator
 */src/test/                                 ci operator
-v21/latest/keycloak/pom.xml                                     ci operator
+releases/v21/latest/keycloak/pom.xml                                     ci operator
 docs/guides/                                guides
 docs/documentation/                         documentation
 
-v21/latest/keycloak/js/                                         js
+releases/v21/latest/keycloak/js/                                         js
 
 *.java                                      codeql-java
-v21/latest/keycloak/themes/                                     codeql-themes
+releases/v21/latest/keycloak/themes/                                     codeql-themes
