@@ -596,18 +596,18 @@ jobs:
   #     - id: check
   #       uses: ./.github/actions/v21/checks-success
   # check:
-    name: Status Check - Keycloak CI
-    if: always() && ( github.event_name != 'schedule' || github.repository == 'keycloak/keycloak' )
-    needs:
-      - conditional
-      - check-set-status
-    runs-on: ubuntu-latest
+    # name: Status Check - Keycloak CI
+    # if: always() && ( github.event_name != 'schedule' || github.repository == 'keycloak/keycloak' )
+    # needs:
+    #   - conditional
+    #   - check-set-status
+    # runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v3
+    # steps:
+    #   - uses: actions/checkout@v3
 
-      - name: Check status
-        uses: ./.github/actions/v21/checks-job-pass
-        with:
-          required: ${{ needs.conditional.outputs.ci }}
-          conclusion: ${{ needs.check-set-status.outputs.conclusion }}
+    #   - name: Check status
+    #     uses: ./.github/actions/v21/checks-job-pass
+    #     with:
+    #       required: ${{ needs.conditional.outputs.ci }}
+    #       conclusion: ${{ needs.check-set-status.outputs.conclusion }}
