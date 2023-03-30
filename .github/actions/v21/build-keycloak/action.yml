@@ -58,8 +58,6 @@ runs:
     - id: maven-cache
       name: Maven cache
       uses: ./.github/actions/v21/maven-cache
-      with:
-        create-cache-if-it-doesnt-exist: true
 
     - id: phantomjs-cache
       name: PhantomJS cache
@@ -72,11 +70,10 @@ runs:
     - id: build-keycloak
       name: Build Keycloak
       shell: bash
-      # By using "dependency:resolve", it will download all dependencies used in later stages for running the tests
       working-directory: ./releases/v21/latest/keycloak
       run: |
         MVN_HTTP_CONFIG="-Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.class=standard -Dmaven.wagon.http.retryHandler.count=3 -Dmaven.wagon.httpconnectionManager.ttlSeconds=120"
-        ./mvnw install dependency:resolve -nsu -B -e -DskipTests -DskipExamples $MVN_HTTP_CONFIG 
+        ./mvnw install -nsu -B -e -DskipTests -DskipExamples $MVN_HTTP_CONFIG 
 
     - id: compress-keycloak-maven-repository
       name: Compress Keycloak Maven artifacts
@@ -105,3 +102,9 @@ runs:
         name: keycloak-dist
         path: releases/v21/latest/keycloak/quarkus/dist/target/keycloak*.tar.gz
         retention-days: 1
+
+    - id: maven-cache-cleanup
+      name: Maven cache cleanup
+      if: steps.maven-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: rm -rf ~/.m2/repository/org/keycloak
