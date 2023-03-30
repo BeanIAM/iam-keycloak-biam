@@ -107,4 +107,5 @@ runs:
       name: Maven cache cleanup
       if: steps.maven-cache.outputs.cache-hit != 'true'
       shell: bash
+      working-directory: ./releases/v21/latest/keycloak
       run: rm -rf ~/.m2/repository/org/keycloak
