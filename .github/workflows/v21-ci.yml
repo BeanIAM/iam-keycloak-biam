@@ -62,7 +62,7 @@ jobs:
 
       - id: unit-test-setup
         name: Unit test setup
-        uses: ./.github/actions/master/unit-test-setup
+        uses: ./.github/actions/v21/unit-test-setup
         with:
           github-ssh-key: ${{ secrets.BEANCI_GITHUB_SSH_KEY_ED25519_BINHLE410 }}
       
