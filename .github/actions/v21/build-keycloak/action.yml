@@ -78,6 +78,8 @@ runs:
       name: Compress Keycloak Maven artifacts
       if: inputs.upload-m2-repo == 'true'
       shell: bash
+      working-directory: ./releases/v21/latest/keycloak      
+
       run: |
         tar -C ~/ --use-compress-program zstd -cf m2-keycloak.tzts \
         --exclude '*.tar.gz' \
@@ -89,7 +91,7 @@ runs:
       uses: actions/upload-artifact@v3
       with:
         name: m2-keycloak.tzts
-        path: m2-keycloak.tzts
+        path: releases/v21/latest/keycloak/m2-keycloak.tzts
         retention-days: 1
 
     - id: upload-keycloak-dist
