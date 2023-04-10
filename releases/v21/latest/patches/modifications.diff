@@ -1,0 +1,6 @@
+diff --git a/releases/v21/latest/keycloak b/releases/v21/latest/keycloak
+--- a/releases/v21/latest/keycloak
++++ b/releases/v21/latest/keycloak
+@@ -1 +1 @@
+-Subproject commit b9a56a7d3551b585a852c38beff92e9a99c30394
++Subproject commit b9a56a7d3551b585a852c38beff92e9a99c30394-dirty
