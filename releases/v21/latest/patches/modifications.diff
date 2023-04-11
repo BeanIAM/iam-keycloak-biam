@@ -1,0 +1,25 @@
+diff --git a/README.md b/README.md
+index 674dee5caf..8d6bc52d1b 100644
+--- a/README.md
++++ b/README.md
+@@ -67,3 +67,7 @@ Before contributing to Keycloak, please read our [contributing guidelines](CONTR
+ ## License
+ 
+ * [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
++
++## Build specific submodules
++`mvn <target> -pl <module> -am`
++Example: `mvn install -pl B -am`
+\ No newline at end of file
+diff --git a/pom.xml b/pom.xml
+index c334bfa624..1f9f3b8a67 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -288,6 +288,7 @@
+         <module>misc</module>
+         <module>js</module>
+         <module>quarkus</module>
++        <module>kafka-spi</module>
+     </modules>
+ 
+     <dependencyManagement>
