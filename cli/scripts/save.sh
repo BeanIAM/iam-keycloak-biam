@@ -13,7 +13,7 @@ TARGET_BRANCH="origin/master"
 #.github folder should be copied to cicd folder
 echo "copy upstream .github folder to cicd"
 LATEST_RELEASE_PATH=releases/${MAJOR_VERSION}/latest
-#cp -r ${LATEST_RELEASE_PATH}/keycloak/.github ${LATEST_RELEASE_PATH}/cicd/
+cp -r ${LATEST_RELEASE_PATH}/keycloak/.github ${LATEST_RELEASE_PATH}/cicd/
 
 # navigate to submodule
 cd ${SUB_MODULE_KEYCLOAK_PATH}
