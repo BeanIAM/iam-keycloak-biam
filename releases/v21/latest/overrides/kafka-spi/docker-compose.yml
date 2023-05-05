@@ -1,18 +1,18 @@
 version: '3'
 services:
-  keycloak:
-    depends_on:
-      - "kafka"
-    image: keycloak-kafka
-    ports:
-      - "8080:8080"
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      KAFKA_TOPIC: keycloak-events
-      KAFKA_CLIENT_ID: keycloak
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9094
-    command: start-dev
+#  keycloak:
+#    depends_on:
+#      - "kafka"
+#    image: keycloak-kafka
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      KEYCLOAK_ADMIN: admin
+#      KEYCLOAK_ADMIN_PASSWORD: admin
+#      KAFKA_TOPIC: keycloak-events
+#      KAFKA_CLIENT_ID: keycloak
+#      KAFKA_BOOTSTRAP_SERVERS: kafka:9094
+#    command: start-dev
     
   zookeeper:
     restart: always
