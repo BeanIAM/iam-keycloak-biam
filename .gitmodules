@@ -10,3 +10,6 @@
 [submodule "releases/v21/latest/keycloak"]
 	path = releases/v21/latest/keycloak
 	url = git@github.com:keycloak/keycloak.git
+[submodule "releases/v23/latest/keycloak"]
+	path = releases/v23/latest/keycloak
+	url = git@github.com:keycloak/keycloak.git
